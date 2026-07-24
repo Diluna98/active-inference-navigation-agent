@@ -1,74 +1,155 @@
 # Active-Inference Navigation Agent
 
-Continuous-observation RSSI source navigation built with
-[PyAIF](https://github.com/Diluna98/python_active_inference).
+[![CI](https://github.com/Diluna98/active-inference-navigation-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Diluna98/active-inference-navigation-agent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![Four active-inference navigation episodes with different starts and RSSI sources](docs/results/active_inference_navigation.gif)
+A continuous-observation active-inference agent that navigates toward an
+unknown radio-frequency source using position and RSSI measurements. The agent
+is built with [PyAIF](https://github.com/Diluna98/python_active_inference).
 
-The animation shows four deterministic episodes running simultaneously. In
-each panel, the agent begins at a different location and navigates toward a
-different RSSI source while its continuous signal observation increases.
+![Continuous active-inference navigation from different starting and source locations](docs/results/active_inference_navigation.gif)
 
-## What this repository contains
+The animation shows four deterministic navigation episodes. Each agent starts
+at a different position and searches for a different RSSI source. The panels
+display the travelled path, source distance, received signal strength, and
+completion status.
 
-- A continuous RSSI likelihood over discrete spatial hidden states
-- Shallow and deep-temporal active-inference configurations
-- A deterministic grid-navigation environment
-- Reproducible multi-scenario simulation and animation
-- Automated linting, tests, and package builds
+## Overview
 
-PyAIF provides the reusable inference machinery. This repository contains only
-the navigation-specific likelihood, environment, configuration, and experiment.
-It does not contain the neural-network RSSI localization project or the
-hierarchical model-selection experiments from the ICRA study.
+The environment provides a continuous observation at every time step:
+
+```text
+observation = [x position, y position, RSSI]
+```
+
+The generative model represents three categorical hidden-state factors:
+
+```text
+state = [x cell, y cell, source cell]
+```
+
+The agent updates its beliefs about its current position and the unknown source
+location, evaluates candidate movement policies, and selects actions that are
+expected to produce preferred high-strength RSSI observations.
+
+The implementation supports:
+
+- Continuous Gaussian likelihoods for position and RSSI
+- Discrete spatial hidden states
+- Cardinal movement policies on a bounded grid
+- Shallow state and policy inference
+- Deep temporal inference over multi-step policies
+- Deterministic, reproducible simulation scenarios
+- Optional parallel policy evaluation through PyAIF
 
 ## Installation
 
-Create a virtual environment and install the package:
+Clone the repository and install it in a virtual environment:
 
 ```bash
+git clone https://github.com/Diluna98/active-inference-navigation-agent.git
+cd active-inference-navigation-agent
 python -m venv .venv
+python -m pip install -e .
+```
+
+Install the development tools when running tests or building distributions:
+
+```bash
 python -m pip install -e ".[dev]"
 ```
 
-During PyAIF v0.2 validation, the dependency points to the tested continuous
-observations feature branch. After PyAIF v0.2.0 is published, it will be
-replaced with `pyaif-toolkit>=0.2,<0.3`.
+## Command-line usage
 
-## Run a navigation episode
+Run a shallow-inference episode:
 
 ```bash
 active-inference-navigate --seed 7 --planning-windows 20
 ```
 
-From Python:
+Run deep temporal inference with a three-step horizon:
+
+```bash
+active-inference-navigate \
+  --seed 7 \
+  --temporal-horizon 3 \
+  --goal-resolution 2 \
+  --planning-windows 8 \
+  --policy-samples 300
+```
+
+The command reports the initial, minimum, and final source distances together
+with the number of movements and completion status.
+
+## Python API
 
 ```python
 from active_inference_navigation import (
+    GridNavigationEnvironment,
     NavigationAgentConfig,
     run_navigation_episode,
 )
 
+config = NavigationAgentConfig(
+    model_size=20,
+    goal_resolution=10,
+    temporal_horizon=1,
+    random_seed=7,
+)
+environment = GridNavigationEnvironment(
+    start=(487.5, 487.5),
+    goal=(212.5, 312.5),
+    random_seed=7,
+)
+
 result = run_navigation_episode(
-    config=NavigationAgentConfig(random_seed=7),
+    config=config,
+    environment=environment,
     planning_windows=20,
 )
+
+print(result.positions)
 print(result.distances)
+print(result.reached_goal)
 ```
 
-Use `--temporal-horizon 1` for shallow inference or a value greater than one
-for deep temporal inference.
+Set `temporal_horizon=1` for shallow inference. Values greater than one enable
+deep temporal inference.
 
 ## Recreate the animation
+
+Generate the four-scenario GIF:
 
 ```bash
 active-inference-navigation-gif
 ```
 
-The command writes
-`docs/results/active_inference_navigation.gif`.
+The animation is written to:
 
-## Validation
+```text
+docs/results/active_inference_navigation.gif
+```
+
+## Project structure
+
+```text
+active-inference-navigation-agent/
+├── src/active_inference_navigation/
+│   ├── agent.py
+│   ├── animation.py
+│   ├── cli.py
+│   ├── environment.py
+│   ├── likelihoods.py
+│   └── simulation.py
+├── tests/
+├── docs/results/
+├── pyproject.toml
+└── LICENSE
+```
+
+## Development
+
+Run the quality checks locally:
 
 ```bash
 ruff check .
@@ -76,7 +157,11 @@ pytest -q
 python -m build
 ```
 
+GitHub Actions runs linting, tests, and distribution builds on Python 3.10 and
+3.11.
+
 ## License
 
-MIT License. Copyright (c) 2026 Diluna A. Warnakulasuriya.
+This project is available under the [MIT License](LICENSE).
 
+Copyright © 2026 Diluna A. Warnakulasuriya.
