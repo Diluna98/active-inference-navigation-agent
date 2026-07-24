@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "active-inference-navigation-agent"
+version = "0.1.0"
+description = "Continuous-observation RSSI navigation built with PyAIF."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Diluna A. Warnakulasuriya" }]
+keywords = ["active-inference", "navigation", "RSSI", "POMDP", "robotics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.24",
+  "matplotlib>=3.7",
+  "pillow>=10.0",
+  "pyaif-toolkit @ https://github.com/Diluna98/python_active_inference/archive/refs/heads/codex/continuous-observations-v0.2.zip",
+]
+
+[project.scripts]
+active-inference-navigate = "active_inference_navigation.cli:main"
+active-inference-navigation-gif = "active_inference_navigation.animation:main"
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2",
+  "pytest>=7.4",
+  "ruff>=0.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/Diluna98/active-inference-navigation-agent"
+Repository = "https://github.com/Diluna98/active-inference-navigation-agent"
+Issues = "https://github.com/Diluna98/active-inference-navigation-agent/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
