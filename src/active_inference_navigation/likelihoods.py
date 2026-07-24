@@ -23,7 +23,7 @@ class RssiNavigationLikelihood:
     position_sigma: float = 1.0
     signal_sigma: float = 2.0
     grid_size: int = 100
-    paper_compatible: bool = False
+    normalized_signal_preference: bool = False
     master_source_resolution: int = 20
     log_preferences: dict = field(init=False)
 
@@ -71,7 +71,7 @@ class RssiNavigationLikelihood:
 
         signal_grid = self.get_o_grid(2)
         utility = 1.0 / (1.0 + np.exp(-0.25 * (signal_grid - 10.0)))
-        if self.paper_compatible:
+        if self.normalized_signal_preference:
             signal_probability = utility + 0.1
         else:
             signal_probability = np.exp(utility - utility.max())

@@ -69,7 +69,7 @@ class NavigationAgentConfig:
     exact_state_limit: int = 100
     random_seed: int = 0
     policy_workers: int = 1
-    paper_compatible_likelihood: bool = False
+    normalized_signal_preference: bool = False
 
 
 def build_navigation_agent(
@@ -97,7 +97,7 @@ def build_navigation_agent(
 
     domain_likelihood = RssiNavigationLikelihood(
         states_dim,
-        paper_compatible=config.paper_compatible_likelihood,
+        normalized_signal_preference=config.normalized_signal_preference,
     )
     likelihood = ContinuousLikelihood.from_model(
         domain_likelihood,

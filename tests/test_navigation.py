@@ -50,10 +50,10 @@ def test_readme_animation_scenarios_reach_their_sources():
     assert all(result.distances[-1] <= 18.0 for result in results)
 
 
-def test_paper_fisher_information_proxy_matches_saved_artifact():
+def test_fisher_information_proxy_matches_saved_reference():
     likelihood = RssiNavigationLikelihood(
         (20, 20, 4),
-        paper_compatible=True,
+        normalized_signal_preference=True,
     )
     observation = np.array([487.5, 487.5, 1.1112189326234811])
 
