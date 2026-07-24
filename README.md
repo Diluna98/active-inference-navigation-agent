@@ -42,27 +42,6 @@ The implementation supports:
 - Deterministic, reproducible simulation scenarios
 - Optional parallel policy evaluation through PyAIF
 
-The reusable navigation package keeps the domain likelihood in
-`RssiNavigationLikelihood`. Set `paper_compatible_likelihood=True` to reproduce
-the RSSI preference and fixed `20×20` Fisher-information reference grid used by
-the paper's meta-inference experiments:
-
-```python
-config = NavigationAgentConfig(
-    goal_resolution=2,
-    temporal_horizon=3,
-    message_passing_iterations=10,
-    policy_samples=500,
-    exact_state_limit=1,
-    random_seed=7,
-    paper_compatible_likelihood=True,
-)
-```
-
-For real sensors, keep the task inference configuration and replace or
-calibrate the likelihood's observation model, noise parameters, and sensor
-preprocessing.
-
 ## Installation
 
 Clone the repository and install it in a virtual environment:
