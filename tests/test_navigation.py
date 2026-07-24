@@ -5,6 +5,7 @@ from active_inference_navigation import (
     run_navigation_episode,
 )
 from active_inference_navigation.animation import README_SCENARIOS, simulate_scenarios
+from active_inference_navigation.likelihoods import RssiNavigationLikelihood
 
 
 def test_continuous_shallow_navigation_approaches_one_cell_from_source():
@@ -48,3 +49,19 @@ def test_readme_animation_scenarios_reach_their_sources():
     assert all(result.reached_goal for result in results)
     assert all(result.distances[-1] <= 18.0 for result in results)
 
+
+def test_paper_fisher_information_proxy_matches_saved_artifact():
+    likelihood = RssiNavigationLikelihood(
+        (20, 20, 4),
+        paper_compatible=True,
+    )
+    observation = np.array([487.5, 487.5, 1.1112189326234811])
+
+    sensitivity = likelihood.compute_sensitivity(observation)
+
+    assert np.isclose(
+        sensitivity,
+        0.053184174702422746,
+        rtol=0.0,
+        atol=2e-10,
+    )

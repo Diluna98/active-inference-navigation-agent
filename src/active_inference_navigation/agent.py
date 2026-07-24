@@ -69,6 +69,7 @@ class NavigationAgentConfig:
     exact_state_limit: int = 100
     random_seed: int = 0
     policy_workers: int = 1
+    paper_compatible_likelihood: bool = False
 
 
 def build_navigation_agent(
@@ -94,7 +95,10 @@ def build_navigation_agent(
         policies=policies,
     )
 
-    domain_likelihood = RssiNavigationLikelihood(states_dim)
+    domain_likelihood = RssiNavigationLikelihood(
+        states_dim,
+        paper_compatible=config.paper_compatible_likelihood,
+    )
     likelihood = ContinuousLikelihood.from_model(
         domain_likelihood,
         modality_dependencies=[[0], [1], [0, 1, 2]],
@@ -121,4 +125,3 @@ def build_navigation_agent(
         inference=inference,
         action_selection="deterministic",
     )
-

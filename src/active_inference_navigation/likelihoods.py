@@ -23,6 +23,8 @@ class RssiNavigationLikelihood:
     position_sigma: float = 1.0
     signal_sigma: float = 2.0
     grid_size: int = 100
+    paper_compatible: bool = False
+    master_source_resolution: int = 20
     log_preferences: dict = field(init=False)
 
     def __post_init__(self) -> None:
@@ -53,6 +55,7 @@ class RssiNavigationLikelihood:
         distance = np.sqrt((current_x - transmitter_x) ** 2 + (current_y - transmitter_y) ** 2)
         signal_mean = self.maximum_rssi * np.exp(-self.signal_decay * distance)
         self.signal_mean = np.transpose(signal_mean, (0, 1, 3, 2)).reshape(self.states_dim)
+        self._build_master_sensitivity()
         self.log_preferences = self._build_log_preferences()
 
     def _cell_centers(self, resolution: int) -> np.ndarray:
@@ -68,12 +71,56 @@ class RssiNavigationLikelihood:
 
         signal_grid = self.get_o_grid(2)
         utility = 1.0 / (1.0 + np.exp(-0.25 * (signal_grid - 10.0)))
-        signal_probability = np.exp(utility - utility.max())
+        if self.paper_compatible:
+            signal_probability = utility + 0.1
+        else:
+            signal_probability = np.exp(utility - utility.max())
         signal_probability /= signal_probability.sum()
         return {
             (0, 1): np.log(joint_position),
             2: np.log(signal_probability),
         }
+
+    def _build_master_sensitivity(self) -> None:
+        goal_x = self._cell_centers(self.master_source_resolution)
+        goal_y = self._cell_centers(self.master_source_resolution)
+        current_x, current_y, transmitter_x, transmitter_y = np.meshgrid(
+            self.x_centers,
+            self.y_centers,
+            goal_x,
+            goal_y,
+            indexing="ij",
+        )
+        distance = np.sqrt(
+            (current_x - transmitter_x) ** 2
+            + (current_y - transmitter_y) ** 2
+        )
+        signal_mean = self.maximum_rssi * np.exp(-self.signal_decay * distance)
+        self.master_signal_mean = np.transpose(
+            signal_mean,
+            (0, 1, 3, 2),
+        ).reshape(
+            self.states_dim[0],
+            self.states_dim[1],
+            self.master_source_resolution**2,
+        )
+        gradient_x = np.gradient(self.master_signal_mean, axis=0)
+        gradient_y = np.gradient(self.master_signal_mean, axis=1)
+        self.fisher_map_signal = (
+            gradient_x**2 + gradient_y**2
+        ) / self.signal_sigma**2
+
+    def compute_sensitivity(self, observation) -> float:
+        """Return the paper's master-grid RSSI Fisher-information proxy."""
+
+        signal = float(np.asarray(observation, dtype=float)[2])
+        standardized = (signal - self.master_signal_mean) / self.signal_sigma
+        likelihood = (
+            np.exp(-0.5 * standardized**2)
+            / (self.signal_sigma * np.sqrt(2.0 * np.pi))
+        )
+        normalized = likelihood / (likelihood.sum() + 1e-8)
+        return float(np.sum(normalized * self.fisher_map_signal))
 
     def get_o_grid(self, modality: int, N_grid: int | None = None) -> np.ndarray:
         size = self.grid_size if N_grid is None else int(N_grid)
@@ -125,4 +172,3 @@ class RssiNavigationLikelihood:
 
         standardized = (observation_grid[None, :] - mean[:, None]) / sigma
         return np.exp(-0.5 * standardized**2) / (sigma * np.sqrt(2.0 * np.pi))
-
