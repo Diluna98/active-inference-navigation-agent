@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.1] - 2026-07-28
+
+### Fixed
+
+- Normalize nested and object-array action outputs returned by PyAIF before converting them to hardware-independent navigation actions.
+- Preserve the public two-component cardinal action shape across supported Python and NumPy combinations.
+
 ## [0.2.0] - 2026-07-28
 
 ### Added
