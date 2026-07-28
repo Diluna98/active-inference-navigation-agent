@@ -18,10 +18,14 @@ class RssiNavigationLikelihood:
 
     states_dim: Sequence[int]
     workspace_size: float = 500.0
+    workspace_height: float | None = None
+    minimum_rssi: float = 0.0
     maximum_rssi: float = 30.0
     signal_decay: float = 0.01
     position_sigma: float = 1.0
     signal_sigma: float = 2.0
+    preference_midpoint: float = 10.0
+    preference_scale: float = 4.0
     grid_size: int = 100
     normalized_signal_preference: bool = False
     master_source_resolution: int = 20
@@ -40,10 +44,12 @@ class RssiNavigationLikelihood:
             raise ValueError("Likelihood standard deviations must be positive.")
 
         self.goal_resolution = goal_resolution
-        self.x_centers = self._cell_centers(self.states_dim[0])
-        self.y_centers = self._cell_centers(self.states_dim[1])
-        goal_x = self._cell_centers(goal_resolution)
-        goal_y = self._cell_centers(goal_resolution)
+        if self.workspace_height is None:
+            self.workspace_height = self.workspace_size
+        self.x_centers = self._cell_centers(self.states_dim[0], self.workspace_size)
+        self.y_centers = self._cell_centers(self.states_dim[1], self.workspace_height)
+        goal_x = self._cell_centers(goal_resolution, self.workspace_size)
+        goal_y = self._cell_centers(goal_resolution, self.workspace_height)
 
         current_x, current_y, transmitter_x, transmitter_y = np.meshgrid(
             self.x_centers,
@@ -53,13 +59,14 @@ class RssiNavigationLikelihood:
             indexing="ij",
         )
         distance = np.sqrt((current_x - transmitter_x) ** 2 + (current_y - transmitter_y) ** 2)
-        signal_mean = self.maximum_rssi * np.exp(-self.signal_decay * distance)
+        signal_mean = self._signal_from_distance(distance)
         self.signal_mean = np.transpose(signal_mean, (0, 1, 3, 2)).reshape(self.states_dim)
         self._build_master_sensitivity()
         self.log_preferences = self._build_log_preferences()
 
-    def _cell_centers(self, resolution: int) -> np.ndarray:
-        cell_size = self.workspace_size / resolution
+    @staticmethod
+    def _cell_centers(resolution: int, extent: float) -> np.ndarray:
+        cell_size = extent / resolution
         return (np.arange(resolution, dtype=float) + 0.5) * cell_size
 
     def _build_log_preferences(self) -> dict:
@@ -70,7 +77,9 @@ class RssiNavigationLikelihood:
         )
 
         signal_grid = self.get_o_grid(2)
-        utility = 1.0 / (1.0 + np.exp(-0.25 * (signal_grid - 10.0)))
+        utility = 1.0 / (
+            1.0 + np.exp(-(signal_grid - self.preference_midpoint) / self.preference_scale)
+        )
         if self.normalized_signal_preference:
             signal_probability = utility + 0.1
         else:
@@ -82,8 +91,8 @@ class RssiNavigationLikelihood:
         }
 
     def _build_master_sensitivity(self) -> None:
-        goal_x = self._cell_centers(self.master_source_resolution)
-        goal_y = self._cell_centers(self.master_source_resolution)
+        goal_x = self._cell_centers(self.master_source_resolution, self.workspace_size)
+        goal_y = self._cell_centers(self.master_source_resolution, self.workspace_height)
         current_x, current_y, transmitter_x, transmitter_y = np.meshgrid(
             self.x_centers,
             self.y_centers,
@@ -95,7 +104,7 @@ class RssiNavigationLikelihood:
             (current_x - transmitter_x) ** 2
             + (current_y - transmitter_y) ** 2
         )
-        signal_mean = self.maximum_rssi * np.exp(-self.signal_decay * distance)
+        signal_mean = self._signal_from_distance(distance)
         self.master_signal_mean = np.transpose(
             signal_mean,
             (0, 1, 3, 2),
@@ -125,9 +134,10 @@ class RssiNavigationLikelihood:
     def get_o_grid(self, modality: int, N_grid: int | None = None) -> np.ndarray:
         size = self.grid_size if N_grid is None else int(N_grid)
         if modality in (0, 1):
-            return np.linspace(0.0, self.workspace_size, size)
+            extent = self.workspace_size if modality == 0 else self.workspace_height
+            return np.linspace(0.0, extent, size)
         if modality == 2:
-            return np.linspace(0.0, self.maximum_rssi, size)
+            return np.linspace(self.minimum_rssi, self.maximum_rssi, size)
         raise ValueError(f"Unknown observation modality: {modality}")
 
     def likelihoods(self, observation: float, modality: int) -> np.ndarray:
@@ -172,3 +182,49 @@ class RssiNavigationLikelihood:
 
         standardized = (observation_grid[None, :] - mean[:, None]) / sigma
         return np.exp(-0.5 * standardized**2) / (sigma * np.sqrt(2.0 * np.pi))
+
+    def _signal_from_distance(self, distance: np.ndarray) -> np.ndarray:
+        """Return the simulated positive RSSI mean at each distance."""
+
+        return self.maximum_rssi * np.exp(-self.signal_decay * distance)
+
+
+@dataclass
+class CalibratedDbmLikelihood(RssiNavigationLikelihood):
+    """Log-distance RSSI likelihood fitted to real median-aggregated dBm data."""
+
+    workspace_size: float = 7.0
+    workspace_height: float | None = 7.0
+    minimum_rssi: float = -95.0
+    maximum_rssi: float = -55.0
+    signal_sigma: float = 3.37
+    preference_midpoint: float = -75.0
+    preference_scale: float = 5.0
+    reference_rssi: float = -63.02
+    path_loss_exponent: float = 1.635
+    minimum_distance: float = 1.0
+
+    def __post_init__(self) -> None:
+        if self.path_loss_exponent <= 0.0:
+            raise ValueError("path_loss_exponent must be positive.")
+        if self.minimum_distance <= 0.0:
+            raise ValueError("minimum_distance must be positive.")
+        if self.minimum_rssi >= self.maximum_rssi:
+            raise ValueError("minimum_rssi must be lower than maximum_rssi.")
+        if self.preference_scale <= 0.0:
+            raise ValueError("preference_scale must be positive.")
+        super().__post_init__()
+
+    def _signal_from_distance(self, distance: np.ndarray) -> np.ndarray:
+        """Return expected dBm using the fitted log-distance path-loss model."""
+
+        return self.expected_rssi(distance)
+
+    def expected_rssi(self, distance: float | np.ndarray) -> np.ndarray:
+        """Return calibrated expected dBm for one or more metric distances."""
+
+        calibrated_distance = np.maximum(np.asarray(distance, dtype=float), self.minimum_distance)
+        signal = self.reference_rssi - 10.0 * self.path_loss_exponent * np.log10(
+            calibrated_distance
+        )
+        return np.clip(signal, self.minimum_rssi, self.maximum_rssi)

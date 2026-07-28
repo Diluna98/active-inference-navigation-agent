@@ -6,8 +6,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .adapters.simulation import (
+    SimulationActionExecutor,
+    SimulationGoalTermination,
+    SimulationObservationSource,
+)
 from .agent import NavigationAgentConfig, build_navigation_agent
 from .environment import GridNavigationEnvironment
+from .runtime import NavigationRuntime
 
 
 @dataclass(frozen=True)
@@ -38,43 +44,33 @@ def run_navigation_episode(
             random_seed=config.random_seed,
         )
 
-    agent = build_navigation_agent(config)
-    observation = environment.reset()
-    distances = [environment.distance_to_goal()]
-    positions = [environment.position.copy()]
-    actions = []
-    reached_goal = False
-    agent.reset()
-
-    for window in range(planning_windows):
-        if config.temporal_horizon > 1:
-            agent.reset()
-            time_steps = range(config.temporal_horizon)
-        else:
-            time_steps = (window,)
-
-        for time_step in time_steps:
-            agent.observe(observation, time_step=time_step)
-            agent.infer_states()
-            agent.infer_policies()
-            action = agent.select_action()
-            if action is None:
-                continue
-
-            navigation_action = np.asarray(action[:2], dtype=int)
-            observation, reached_goal = environment.step(navigation_action)
-            actions.append(navigation_action)
-            distances.append(environment.distance_to_goal())
-            positions.append(environment.position.copy())
-            if reached_goal:
-                break
-        if reached_goal:
-            break
+    observation_source = SimulationObservationSource(environment)
+    observation_source.reset()
+    runtime = NavigationRuntime(
+        agent=build_navigation_agent(config),
+        observation_source=observation_source,
+        action_executor=SimulationActionExecutor(environment, observation_source),
+        termination_condition=SimulationGoalTermination(
+            goal=environment.goal,
+            threshold=environment.goal_threshold,
+        ),
+        temporal_horizon=config.temporal_horizon,
+    )
+    runtime_result = runtime.run(planning_windows=planning_windows)
+    positions = np.asarray(
+        [(observation.x, observation.y) for observation in runtime_result.observations],
+        dtype=float,
+    )
+    distances = np.linalg.norm(positions - np.asarray(environment.goal, dtype=float), axis=1)
+    actions = np.asarray(
+        [action.as_array() for action in runtime_result.actions],
+        dtype=int,
+    ).reshape(-1, 2)
 
     return NavigationEpisodeResult(
-        distances=np.asarray(distances, dtype=float),
-        positions=np.asarray(positions, dtype=float),
-        actions=np.asarray(actions, dtype=int),
-        reached_goal=reached_goal,
+        distances=distances,
+        positions=positions,
+        actions=actions,
+        reached_goal=runtime_result.terminated,
     )
 

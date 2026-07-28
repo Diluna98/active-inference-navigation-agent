@@ -1,0 +1,3 @@
+include CHANGELOG.md
+include config/navigation.yaml
+include docs/rssi_calibration.md

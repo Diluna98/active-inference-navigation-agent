@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from .models import NavigationAction
+
 
 @dataclass
 class GridNavigationEnvironment:
@@ -46,10 +48,9 @@ class GridNavigationEnvironment:
         )
 
     def step(self, action) -> tuple[np.ndarray, bool]:
-        x_action, y_action = (int(action[0]), int(action[1]))
+        navigation_action = NavigationAction.from_sequence(action)
+        x_action, y_action = (int(navigation_action.x), int(navigation_action.y))
         action_delta = {0: 0.0, 1: -self.step_size, 2: self.step_size}
-        if x_action not in action_delta or y_action not in action_delta:
-            raise ValueError("Navigation actions must be 0, 1, or 2.")
         self.position += np.array([action_delta[x_action], action_delta[y_action]])
         self.position = np.clip(self.position, 0.0, self.workspace_size)
         done = self.distance_to_goal() <= self.goal_threshold
