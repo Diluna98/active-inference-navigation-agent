@@ -27,6 +27,26 @@ def _object_array(*arrays) -> np.ndarray:
     return result
 
 
+def _normalize_selected_action(selected: Any) -> np.ndarray:
+    """Convert PyAIF's scalar-per-factor action formats to a flat integer array."""
+
+    raw_components = np.asarray(selected, dtype=object).reshape(-1)
+    components: list[int] = []
+    for raw_component in raw_components:
+        component = np.asarray(raw_component)
+        if component.size != 1:
+            raise ValueError("Each selected action factor must contain exactly one value.")
+        value = component.reshape(-1)[0]
+        try:
+            integer_value = int(value)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise ValueError("Selected action factors must be integer values.") from error
+        if integer_value != value:
+            raise ValueError("Selected action factors must be integer values.")
+        components.append(integer_value)
+    return np.asarray(components, dtype=int)
+
+
 def _transition_model(states_dim: tuple[int, int, int]) -> np.ndarray:
     transitions = []
     for factor, state_count in enumerate(states_dim):
@@ -129,11 +149,11 @@ class CardinalNavigationAgent:
                 self._agent.posterior_pi[...] = posterior
         if selected is None:
             return None
-        action = np.asarray(selected, dtype=int).copy()
+        action = _normalize_selected_action(selected)
         navigation_action = NavigationAction.from_sequence(action)
         if allowed_actions is not None and navigation_action not in allowed_actions:
             raise RuntimeError("The inference agent selected a constrained action.")
-        return action
+        return navigation_action.as_array()
 
     @property
     def navigation_actions(self) -> tuple[NavigationAction, ...]:

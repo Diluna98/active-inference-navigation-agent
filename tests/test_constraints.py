@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from active_inference_navigation.agent import CardinalNavigationAgent
 from active_inference_navigation.constraints import GridBoundaryConstraint
@@ -40,6 +41,14 @@ class FakePolicyAgent:
         return self.policies[np.argmax(self.posterior_pi)][0]
 
 
+class FixedActionAgent:
+    def __init__(self, selected):
+        self.selected = selected
+
+    def select_action(self):
+        return self.selected
+
+
 def test_agent_selects_next_best_policy_when_boundary_masks_preferred_action():
     agent = CardinalNavigationAgent(FakePolicyAgent())
     constraint = GridBoundaryConstraint(GridGeometry())
@@ -48,3 +57,35 @@ def test_agent_selects_next_best_policy_when_boundary_masks_preferred_action():
     selected = agent.select_action(allowed)
 
     assert tuple(selected[:2]) == (2, 0)
+
+
+@pytest.mark.parametrize(
+    ("selected", "expected"),
+    [
+        (np.asarray([[2], [0], [0]]), (2, 0)),
+        (np.asarray([[0, 2, 0]]), (0, 2)),
+    ],
+)
+def test_agent_normalizes_nested_numeric_action_shapes(selected, expected):
+    action = CardinalNavigationAgent(FixedActionAgent(selected)).select_action()
+
+    assert tuple(action) == expected
+    assert action.dtype == np.dtype(int)
+    assert action.shape == (2,)
+
+
+def test_agent_normalizes_object_array_of_single_value_arrays():
+    selected = np.empty(3, dtype=object)
+    selected[:] = [np.asarray([1]), np.asarray([0]), np.asarray([0])]
+
+    action = CardinalNavigationAgent(FixedActionAgent(selected)).select_action()
+
+    assert tuple(action) == (1, 0)
+
+
+def test_agent_rejects_action_factor_with_multiple_values():
+    selected = np.empty(3, dtype=object)
+    selected[:] = [np.asarray([1, 2]), np.asarray([0]), np.asarray([0])]
+
+    with pytest.raises(ValueError, match="exactly one value"):
+        CardinalNavigationAgent(FixedActionAgent(selected)).select_action()
