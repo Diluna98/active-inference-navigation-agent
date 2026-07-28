@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "active-inference-navigation-agent"
-version = "0.2.0"
+version = "0.2.1"
 description = "Continuous-observation RSSI navigation built with PyAIF."
 readme = "README.md"
 requires-python = ">=3.10"
