@@ -78,21 +78,15 @@ class RosObservationSource:
                 raise ObservationUnavailableError("No odometry measurement has been received.")
             if now - self._odom_time > self.odom_timeout:
                 raise StaleObservationError("The latest odometry measurement is stale.")
-            recent_rssi = [
-                value
-                for timestamp, value in self._rssi_samples
-                if now - timestamp <= self.rssi_timeout
-            ]
-            if not recent_rssi:
-                if self._rssi_samples:
-                    raise StaleObservationError("The latest RSSI measurement is stale.")
+            if not self._rssi_samples:
                 raise ObservationUnavailableError("No RSSI measurement has been received.")
+            latest_rssi_time = self._rssi_samples[-1][0]
+            if now - latest_rssi_time > self.rssi_timeout:
+                raise StaleObservationError("The latest RSSI measurement is stale.")
+            window_rssi = [value for _, value in self._rssi_samples]
             x, y = self.position_transform(*self._position)
-            measurement_time = max(
-                self._odom_time,
-                max(timestamp for timestamp, _ in self._rssi_samples),
-            )
-        return Observation(x=x, y=y, rssi=float(median(recent_rssi)), timestamp=measurement_time)
+            measurement_time = max(self._odom_time, latest_rssi_time)
+        return Observation(x=x, y=y, rssi=float(median(window_rssi)), timestamp=measurement_time)
 
 
 def attach_ros_observation_subscriptions(

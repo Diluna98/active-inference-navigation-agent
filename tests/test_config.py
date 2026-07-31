@@ -32,9 +32,10 @@ def test_default_configuration_matches_real_experiment():
     assert config.topics.rssi == "/tb4_08/rssi"
     assert config.topics.cmd_vel == "/tb4_08/cmd_vel"
     assert config.motion.final_heading == "positive_x"
-    assert config.motion.settling_time == pytest.approx(2.5)
-    assert config.likelihood_provider == "calibrated_dbm"
-    assert config.rssi_likelihood.reference_rssi == pytest.approx(-63.02)
+    assert config.motion.settling_time == pytest.approx(6.0)
+    assert config.likelihood_provider == "bearing_calibrated_dbm"
+    assert config.rssi_likelihood.reference_rssi == pytest.approx(-63.109)
+    assert config.rssi_likelihood.bearing_sine_coefficient == pytest.approx(-9.065)
 
 
 def test_repository_yaml_loads():
@@ -43,7 +44,7 @@ def test_repository_yaml_loads():
     assert config.grid.columns == 20
     assert config.active_inference.goal_resolution == 10
     assert config.sensors.rssi_median_window == 5
-    assert config.likelihood_provider == "calibrated_dbm"
+    assert config.likelihood_provider == "bearing_calibrated_dbm"
 
 
 def test_packaged_default_matches_repository_yaml():

@@ -16,7 +16,11 @@ from PyAIF import (
     utils,
 )
 
-from .likelihoods import CalibratedDbmLikelihood, RssiNavigationLikelihood
+from .likelihoods import (
+    BearingCalibratedDbmLikelihood,
+    CalibratedDbmLikelihood,
+    RssiNavigationLikelihood,
+)
 from .models import NavigationAction
 
 
@@ -98,12 +102,14 @@ class NavigationAgentConfig:
     policy_workers: int = 1
     normalized_signal_preference: bool = False
     likelihood_provider: str = "rssi_navigation"
-    reference_rssi: float = -63.02
-    path_loss_exponent: float = 1.635
-    signal_sigma: float = 3.37
-    minimum_calibrated_distance: float = 1.0
+    reference_rssi: float = -63.109
+    path_loss_exponent: float = 3.104
+    signal_sigma: float = 7.0
+    minimum_calibrated_distance: float = 0.35
     minimum_rssi: float = -95.0
-    maximum_rssi: float = -55.0
+    maximum_rssi: float = -25.0
+    bearing_cosine_coefficient: float = 4.761
+    bearing_sine_coefficient: float = -9.065
 
 
 class CardinalNavigationAgent:
@@ -195,8 +201,19 @@ def build_navigation_agent(
             workspace_height=config.workspace_height,
             normalized_signal_preference=config.normalized_signal_preference,
         )
-    elif config.likelihood_provider == "calibrated_dbm":
-        domain_likelihood = CalibratedDbmLikelihood(
+    elif config.likelihood_provider in {"calibrated_dbm", "bearing_calibrated_dbm"}:
+        likelihood_type = (
+            BearingCalibratedDbmLikelihood
+            if config.likelihood_provider == "bearing_calibrated_dbm"
+            else CalibratedDbmLikelihood
+        )
+        likelihood_kwargs = {}
+        if likelihood_type is BearingCalibratedDbmLikelihood:
+            likelihood_kwargs = {
+                "bearing_cosine_coefficient": config.bearing_cosine_coefficient,
+                "bearing_sine_coefficient": config.bearing_sine_coefficient,
+            }
+        domain_likelihood = likelihood_type(
             states_dim,
             workspace_size=config.workspace_size,
             workspace_height=config.workspace_height,
@@ -207,6 +224,7 @@ def build_navigation_agent(
             minimum_rssi=config.minimum_rssi,
             maximum_rssi=config.maximum_rssi,
             normalized_signal_preference=config.normalized_signal_preference,
+            **likelihood_kwargs,
         )
     else:
         raise ValueError(f"Unknown likelihood provider: {config.likelihood_provider}")

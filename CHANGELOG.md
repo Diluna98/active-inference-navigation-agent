@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.0] - 2026-07-31
+
+### Added
+
+- Bearing-aware calibrated dBm likelihood for repeatable fixed-heading PCB
+  antenna measurements.
+- Reproducible median-window calibration fitter with leave-one-batch-out
+  validation.
+
+### Changed
+
+- RSSI aggregation now retains the configured last-N samples while using the
+  newest packet alone for freshness.
+- Real-world defaults use the directional fit, a 0.35 m calibration floor, a
+  wider dBm observation range, and enough settling time to refill the
+  five-sample stationary window.
+
 ## [0.2.2] - 2026-07-31
 
 ### Added

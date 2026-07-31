@@ -140,7 +140,7 @@ class MotionConfig:
     control_period: float = 0.05
     action_timeout: float = 30.0
     final_heading: str | None = "positive_x"
-    settling_time: float = 2.5
+    settling_time: float = 6.0
 
     def __post_init__(self) -> None:
         if min(
@@ -166,12 +166,14 @@ class MotionConfig:
 class RssiLikelihoodConfig:
     """Parameters for the calibrated median-aggregated dBm likelihood."""
 
-    reference_rssi: float = -63.02
-    path_loss_exponent: float = 1.635
-    signal_sigma: float = 3.37
-    minimum_calibrated_distance: float = 1.0
+    reference_rssi: float = -63.109
+    path_loss_exponent: float = 3.104
+    signal_sigma: float = 7.0
+    minimum_calibrated_distance: float = 0.35
     minimum_rssi: float = -95.0
-    maximum_rssi: float = -55.0
+    maximum_rssi: float = -25.0
+    bearing_cosine_coefficient: float = 4.761
+    bearing_sine_coefficient: float = -9.065
 
     def __post_init__(self) -> None:
         if min(
@@ -197,7 +199,7 @@ class NavigationConfig:
     sensors: SensorConfig = field(default_factory=SensorConfig)
     motion: MotionConfig = field(default_factory=MotionConfig)
     rssi_likelihood: RssiLikelihoodConfig = field(default_factory=RssiLikelihoodConfig)
-    likelihood_provider: str = "calibrated_dbm"
+    likelihood_provider: str = "bearing_calibrated_dbm"
 
     def __post_init__(self) -> None:
         self.grid.geometry()
@@ -229,7 +231,7 @@ def _parse_navigation_config(data: Any) -> NavigationConfig:
         sensors=SensorConfig(**_section(data, "sensors")),
         motion=MotionConfig(**_section(data, "motion")),
         rssi_likelihood=RssiLikelihoodConfig(**_section(data, "rssi_likelihood")),
-        likelihood_provider=str(data.get("likelihood_provider", "calibrated_dbm")),
+        likelihood_provider=str(data.get("likelihood_provider", "bearing_calibrated_dbm")),
     )
 
 

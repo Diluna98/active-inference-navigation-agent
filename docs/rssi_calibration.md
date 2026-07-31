@@ -1,38 +1,50 @@
 # RSSI calibration
 
-The `calibrated_dbm` likelihood was fitted from stationary measurements at
-1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, and 8.6 metres.
-
-The runtime's default observation is the median of five recent RSSI samples.
-Bootstrap distributions of five-sample medians were therefore used instead of
-fitting individual packets. The resulting initial log-distance model is:
+The real-robot configuration selects `bearing_calibrated_dbm`. This provider
+models the repeatable directional response of the TurtleBot 4 and nRF DK PCB
+antennas in addition to log-distance path loss:
 
 ```text
-expected_rssi(distance_m) =
-    -63.02 - 10 * 1.635 * log10(distance_m)
+theta = atan2(robot_y - source_y, robot_x - source_x)
+expected_rssi =
+    reference_rssi
+    - 10 * path_loss_exponent * log10(max(distance_m, minimum_distance))
+    + bearing_cosine_coefficient * cos(theta)
+    + bearing_sine_coefficient * sin(theta)
 ```
 
-The pooled residual standard deviation of the aggregated measurements is
-approximately 3.37 dB. These values are exposed in `config/navigation.yaml`;
-they are not embedded in the ROS sensor adapter.
+`theta` is the arena-frame bearing from the source to the robot. The fit is
+valid only when the transmitter orientation is unchanged and the robot is
+restored to arena positive x before every RSSI observation. The actuator does
+this through `motion.final_heading: positive_x`.
 
-Distances below 1.0 m are clamped to 1.0 m because no closer measurements were
-provided. Distances beyond 8.6 m are extrapolations. The 5 m and 7 m datasets
-had substantially larger spread than the other distances, so this initial
-single-Gaussian model should be reviewed after collecting measurements across
-robot orientations and additional arena locations.
-
-The fitted model parameters are:
+The fit used 720 stationary packets from 24 location batches in the two
+directional calibration runs. Raw packets were converted to 144 non-overlapping
+median-of-five observations to match the runtime. Each location batch received
+equal total weight. Leave-one-batch-out RMSE improved from 9.62 dB for a
+distance-only model to 7.02 dB for the bearing model. The configured 7.0 dB
+sigma therefore reflects held-out prediction error rather than training error.
 
 | Parameter | Value |
 |---|---:|
-| Reference RSSI at 1 m | -63.02 dBm |
-| Path-loss exponent | 1.635 |
-| Aggregated signal sigma | 3.37 dB |
-| Minimum calibrated distance | 1.0 m |
+| Reference RSSI at 1 m | -63.109 dBm |
+| Path-loss exponent | 3.104 |
+| Bearing cosine coefficient | 4.761 dB |
+| Bearing sine coefficient | -9.065 dB |
+| Aggregated signal sigma | 7.0 dB |
+| Minimum calibrated distance | 0.35 m |
 | Observation grid minimum | -95 dBm |
-| Observation grid maximum | -55 dBm |
+| Observation grid maximum | -25 dBm |
 
-Changing radios, antennas, mounting, transmit power, arena materials, or RSSI
-aggregation requires recalibration. Sensor adapters should continue returning
-the measured dBm value unchanged.
+Reproduce the fit with:
+
+```bash
+python scripts/fit_rssi_likelihood.py \
+  rssi_directional_test_part_1.csv \
+  rssi_directional_test_part_2.csv
+```
+
+The older distance-only `calibrated_dbm` provider remains available. Changing
+radios, antenna mounting/orientation, transmit power, arena materials, or RSSI
+aggregation requires recalibration. Sensor adapters continue returning
+measured dBm unchanged; likelihood assumptions remain outside ROS code.

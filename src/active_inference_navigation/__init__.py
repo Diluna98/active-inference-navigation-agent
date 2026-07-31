@@ -6,7 +6,11 @@ from .environment import GridNavigationEnvironment
 from .frame import ArenaFrameTransform
 from .geometry import GridGeometry
 from .interfaces import ActionConstraint, ActionExecutor, ObservationSource, TerminationCondition
-from .likelihoods import CalibratedDbmLikelihood, RssiNavigationLikelihood
+from .likelihoods import (
+    BearingCalibratedDbmLikelihood,
+    CalibratedDbmLikelihood,
+    RssiNavigationLikelihood,
+)
 from .models import AxisAction, NavigationAction, Observation
 from .runtime import NavigationRuntime, NavigationRuntimeResult
 from .simulation import NavigationEpisodeResult, run_navigation_episode
@@ -16,6 +20,7 @@ __all__ = [
     "ActionExecutor",
     "ArenaFrameTransform",
     "AxisAction",
+    "BearingCalibratedDbmLikelihood",
     "CalibratedDbmLikelihood",
     "CardinalNavigationAgent",
     "GridBoundaryConstraint",

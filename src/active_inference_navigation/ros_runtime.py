@@ -114,6 +114,12 @@ def run_ros_navigation(
             ),
             minimum_rssi=config.rssi_likelihood.minimum_rssi,
             maximum_rssi=config.rssi_likelihood.maximum_rssi,
+            bearing_cosine_coefficient=(
+                config.rssi_likelihood.bearing_cosine_coefficient
+            ),
+            bearing_sine_coefficient=(
+                config.rssi_likelihood.bearing_sine_coefficient
+            ),
         )
     )
     runtime = NavigationRuntime(

@@ -53,6 +53,22 @@ def test_rssi_window_keeps_only_configured_number_of_samples():
     assert source.read_observation().rssi == pytest.approx(-80.0)
 
 
+def test_rssi_window_retains_older_values_when_latest_sample_is_fresh():
+    source = RosObservationSource(
+        rssi_median_window=5,
+        rssi_timeout=1.5,
+        clock=lambda: 10.0,
+    )
+    source.odometry_callback(odometry(0.0, 0.0), received_at=10.0)
+    for timestamp, value in zip(
+        (5.0, 6.0, 7.0, 8.0, 9.0),
+        (-90.0, -80.0, -70.0, -60.0, -50.0),
+    ):
+        source.rssi_callback(rssi(value), received_at=timestamp)
+
+    assert source.read_observation().rssi == pytest.approx(-70.0)
+
+
 def test_ros_observation_rejects_stale_rssi():
     source = RosObservationSource(rssi_timeout=0.5, clock=lambda: 10.0)
     source.odometry_callback(odometry(1.0, 2.0), received_at=10.0)

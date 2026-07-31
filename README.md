@@ -169,8 +169,11 @@ active-inference-navigation-ros \
 The installed command uses its packaged default configuration. Pass
 `--config /path/to/navigation.yaml` to use an experiment-specific copy.
 
-The observation adapter stores current x/y and a configurable median window of
-RSSI samples. Missing or stale odometry/RSSI raises a clear observation error.
+The observation adapter stores current x/y and a configurable last-N median
+window of RSSI samples. RSSI freshness is determined from the newest packet,
+so older members of a five-sample window are not discarded merely because
+packet delivery is about 1 Hz. Missing or stale odometry/RSSI raises a clear
+observation error.
 
 The TurtleBot executor converts a grid step to the configured cell displacement
 (0.35 m with the default 7 m, 20 by 20 arena). It uses odometry to rotate
@@ -266,13 +269,14 @@ Edit `config/navigation.yaml` to change:
 - Likelihood provider
 
 `GridGeometry` is the single source for metric/grid conversion and boundary
-checks. Rectangular grids and arenas are supported. The built-in
-simulation `rssi_navigation` likelihood and real-world `calibrated_dbm`
-likelihood are kept separate from sensor adapters.
+checks. Rectangular grids and arenas are supported. The built-in simulation
+`rssi_navigation`, distance-only `calibrated_dbm`, and directional real-world
+`bearing_calibrated_dbm` likelihoods are kept separate from sensor adapters.
 
-The supplied real-world configuration selects `calibrated_dbm`. Its initial
-parameters were fitted from measurements between 1.0 m and 8.6 m using the same
-five-sample median aggregation as the runtime. See
+The supplied real-world configuration selects `bearing_calibrated_dbm`. Its
+parameters were fitted from stationary measurements using the same five-sample
+median aggregation as the runtime. It assumes the robot is restored to arena
+positive x before sampling, as configured by `motion.final_heading`. See
 [`docs/rssi_calibration.md`](docs/rssi_calibration.md) for the fitted model,
 uncertainty, and extrapolation limits.
 

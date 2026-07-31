@@ -58,8 +58,12 @@ class RssiNavigationLikelihood:
             goal_y,
             indexing="ij",
         )
-        distance = np.sqrt((current_x - transmitter_x) ** 2 + (current_y - transmitter_y) ** 2)
-        signal_mean = self._signal_from_distance(distance)
+        signal_mean = self._signal_from_positions(
+            current_x,
+            current_y,
+            transmitter_x,
+            transmitter_y,
+        )
         self.signal_mean = np.transpose(signal_mean, (0, 1, 3, 2)).reshape(self.states_dim)
         self._build_master_sensitivity()
         self.log_preferences = self._build_log_preferences()
@@ -100,11 +104,12 @@ class RssiNavigationLikelihood:
             goal_y,
             indexing="ij",
         )
-        distance = np.sqrt(
-            (current_x - transmitter_x) ** 2
-            + (current_y - transmitter_y) ** 2
+        signal_mean = self._signal_from_positions(
+            current_x,
+            current_y,
+            transmitter_x,
+            transmitter_y,
         )
-        signal_mean = self._signal_from_distance(distance)
         self.master_signal_mean = np.transpose(
             signal_mean,
             (0, 1, 3, 2),
@@ -188,6 +193,18 @@ class RssiNavigationLikelihood:
 
         return self.maximum_rssi * np.exp(-self.signal_decay * distance)
 
+    def _signal_from_positions(
+        self,
+        receiver_x: np.ndarray,
+        receiver_y: np.ndarray,
+        transmitter_x: np.ndarray,
+        transmitter_y: np.ndarray,
+    ) -> np.ndarray:
+        """Return expected RSSI for receiver/transmitter arena positions."""
+
+        distance = np.hypot(receiver_x - transmitter_x, receiver_y - transmitter_y)
+        return self._signal_from_distance(distance)
+
 
 @dataclass
 class CalibratedDbmLikelihood(RssiNavigationLikelihood):
@@ -226,5 +243,68 @@ class CalibratedDbmLikelihood(RssiNavigationLikelihood):
         calibrated_distance = np.maximum(np.asarray(distance, dtype=float), self.minimum_distance)
         signal = self.reference_rssi - 10.0 * self.path_loss_exponent * np.log10(
             calibrated_distance
+        )
+        return np.clip(signal, self.minimum_rssi, self.maximum_rssi)
+
+
+@dataclass
+class BearingCalibratedDbmLikelihood(CalibratedDbmLikelihood):
+    """Directional dBm likelihood for a repeatable arena-fixed antenna heading.
+
+    Bearing is measured in the arena frame from transmitter to receiver. The
+    first-harmonic coefficients therefore model the combined directional
+    response of a fixed transmitter and a robot restored to the same heading
+    before each RSSI observation.
+    """
+
+    minimum_rssi: float = -95.0
+    maximum_rssi: float = -25.0
+    signal_sigma: float = 7.0
+    reference_rssi: float = -63.109
+    path_loss_exponent: float = 3.104
+    minimum_distance: float = 0.35
+    bearing_cosine_coefficient: float = 4.761
+    bearing_sine_coefficient: float = -9.065
+
+    def _signal_from_positions(
+        self,
+        receiver_x: np.ndarray,
+        receiver_y: np.ndarray,
+        transmitter_x: np.ndarray,
+        transmitter_y: np.ndarray,
+    ) -> np.ndarray:
+        """Return log-distance RSSI adjusted for arena bearing."""
+
+        return self.expected_rssi_at(
+            receiver_x,
+            receiver_y,
+            transmitter_x,
+            transmitter_y,
+        )
+
+    def expected_rssi_at(
+        self,
+        receiver_x: float | np.ndarray,
+        receiver_y: float | np.ndarray,
+        transmitter_x: float | np.ndarray,
+        transmitter_y: float | np.ndarray,
+    ) -> np.ndarray:
+        """Return expected dBm at arena positions with a fixed robot heading."""
+
+        receiver_x = np.asarray(receiver_x, dtype=float)
+        receiver_y = np.asarray(receiver_y, dtype=float)
+        transmitter_x = np.asarray(transmitter_x, dtype=float)
+        transmitter_y = np.asarray(transmitter_y, dtype=float)
+        delta_x = receiver_x - transmitter_x
+        delta_y = receiver_y - transmitter_y
+        distance = np.hypot(delta_x, delta_y)
+        bearing = np.arctan2(delta_y, delta_x)
+        signal = (
+            self.reference_rssi
+            - 10.0
+            * self.path_loss_exponent
+            * np.log10(np.maximum(distance, self.minimum_distance))
+            + self.bearing_cosine_coefficient * np.cos(bearing)
+            + self.bearing_sine_coefficient * np.sin(bearing)
         )
         return np.clip(signal, self.minimum_rssi, self.maximum_rssi)
