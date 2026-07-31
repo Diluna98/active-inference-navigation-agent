@@ -50,6 +50,9 @@ motion:
   yaw_tolerance: 0.03
   control_period: 0.05
   action_timeout: 30.0
+  # Restore a repeatable antenna orientation before the next RSSI observation.
+  final_heading: positive_y
+  settling_time: 2.5
 
 rssi_likelihood:
   reference_rssi: -63.02

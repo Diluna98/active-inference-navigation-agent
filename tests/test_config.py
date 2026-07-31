@@ -31,6 +31,8 @@ def test_default_configuration_matches_real_experiment():
     assert config.topics.odom == "/tb4_08/odom"
     assert config.topics.rssi == "/tb4_08/rssi"
     assert config.topics.cmd_vel == "/tb4_08/cmd_vel"
+    assert config.motion.final_heading == "positive_y"
+    assert config.motion.settling_time == pytest.approx(2.5)
     assert config.likelihood_provider == "calibrated_dbm"
     assert config.rssi_likelihood.reference_rssi == pytest.approx(-63.02)
 

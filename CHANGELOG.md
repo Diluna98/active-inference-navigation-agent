@@ -2,12 +2,30 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.2] - 2026-07-31
+
+### Added
+
+- Configurable final arena heading for repeatable robot orientation after every
+  grid action.
+- Configurable post-motion settling interval before the next sensor
+  observation.
+
+### Changed
+
+- TurtleBot actions now restore arena `+y` by default, including stay actions,
+  so PCB-antenna orientation does not depend on the preceding movement.
+- ROS navigation, actuator testing, and packaged YAML propagate the new motion
+  settings.
+
 ## [0.2.1] - 2026-07-28
 
 ### Fixed
 
-- Normalize nested and object-array action outputs returned by PyAIF before converting them to hardware-independent navigation actions.
-- Preserve the public two-component cardinal action shape across supported Python and NumPy combinations.
+- Normalize nested and object-array action outputs returned by PyAIF before
+  converting them to hardware-independent navigation actions.
+- Preserve the public two-component cardinal action shape across supported
+  Python and NumPy combinations.
 
 ## [0.2.0] - 2026-07-28
 

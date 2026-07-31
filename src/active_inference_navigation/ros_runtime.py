@@ -86,6 +86,8 @@ def run_ros_navigation(
         yaw_tolerance=config.motion.yaw_tolerance,
         control_period=config.motion.control_period,
         action_timeout=config.motion.action_timeout,
+        final_heading=config.motion.final_heading,
+        settling_time=config.motion.settling_time,
         shutdown_requested=lambda: not rclpy.ok(),
     )
     inference = config.active_inference

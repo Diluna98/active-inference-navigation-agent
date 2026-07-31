@@ -13,6 +13,13 @@ from ..geometry import GridGeometry
 from ..interfaces import ActionExecutionError
 from ..models import NavigationAction
 
+_ARENA_HEADINGS = {
+    "positive_x": (1.0, 0.0),
+    "negative_x": (-1.0, 0.0),
+    "positive_y": (0.0, 1.0),
+    "negative_y": (0.0, -1.0),
+}
+
 
 @dataclass(frozen=True)
 class RobotPose:
@@ -61,11 +68,14 @@ class TurtleBotActionExecutor:
     yaw_tolerance: float = 0.03
     control_period: float = 0.05
     action_timeout: float = 30.0
+    final_heading: str | None = "positive_y"
+    settling_time: float = 2.5
     clock: Callable[[], float] = monotonic
     sleeper: Callable[[float], None] = sleep
     shutdown_requested: Callable[[], bool] = lambda: False
     target_position: tuple[float, float] | None = field(default=None, init=False)
     _target_yaw: float | None = field(default=None, init=False, repr=False)
+    _final_yaw: float | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if min(
@@ -77,6 +87,13 @@ class TurtleBotActionExecutor:
             self.action_timeout,
         ) <= 0.0:
             raise ValueError("Motion settings must all be positive.")
+        if self.settling_time < 0.0:
+            raise ValueError("Motion settling_time must not be negative.")
+        if self.final_heading is not None and self.final_heading not in _ARENA_HEADINGS:
+            raise ValueError(
+                "final_heading must be positive_x, negative_x, positive_y, "
+                "negative_y, or null."
+            )
 
     def execute(self, action: NavigationAction) -> None:
         """Validate an action and calculate its metric displacement target."""
@@ -90,6 +107,7 @@ class TurtleBotActionExecutor:
         )
         current_cell = self.geometry.metric_to_grid(*current_arena)
         target_cell = self.geometry.target_cell(current_cell, action)
+        self._final_yaw = self._configured_final_yaw()
         delta_x, delta_y = action.cell_delta
         if delta_x == 0 and delta_y == 0:
             self.target_position = (current_pose.x, current_pose.y)
@@ -103,21 +121,21 @@ class TurtleBotActionExecutor:
             )
 
     def wait_for_completion(self) -> None:
-        """Rotate, translate, and stop; stop immediately on every failure."""
+        """Move one cell, restore the configured heading, settle, and stop."""
 
         if self.target_position is None or self._target_yaw is None:
             raise ActionExecutionError("No navigation action is pending.")
         deadline = self.clock() + self.action_timeout
         try:
-            if self._distance_to_target(self.pose_provider()) <= self.position_tolerance:
+            if self._distance_to_target(self.pose_provider()) > self.position_tolerance:
+                self._rotate_to_yaw(self._target_yaw, deadline)
                 self.stop()
-                return
-            self._rotate_to_target(deadline)
+                self._move_to_target(deadline)
+                self.stop()
+            if self._final_yaw is not None:
+                self._rotate_to_yaw(self._final_yaw, deadline)
             self.stop()
-            self._move_to_target(deadline)
-            self.stop()
-            self._rotate_to_target(deadline)
-            self.stop()
+            self._wait_for_settling(deadline)
         except Exception as error:
             self.stop()
             if isinstance(error, ActionExecutionError):
@@ -126,6 +144,7 @@ class TurtleBotActionExecutor:
         finally:
             self.target_position = None
             self._target_yaw = None
+            self._final_yaw = None
 
     def stop(self) -> None:
         """Command zero velocity."""
@@ -138,12 +157,18 @@ class TurtleBotActionExecutor:
         if self.clock() > deadline:
             raise ActionExecutionError("Robot action timed out.")
 
-    def _rotate_to_target(self, deadline: float) -> None:
-        assert self._target_yaw is not None
+    def _configured_final_yaw(self) -> float | None:
+        if self.final_heading is None:
+            return None
+        arena_x, arena_y = _ARENA_HEADINGS[self.final_heading]
+        odom_x, odom_y = self.frame_transform.vector_to_odom(arena_x, arena_y)
+        return atan2(odom_y, odom_x)
+
+    def _rotate_to_yaw(self, target_yaw: float, deadline: float) -> None:
         while True:
             self._check_running(deadline)
             pose = self.pose_provider()
-            error = normalize_angle(self._target_yaw - pose.yaw)
+            error = normalize_angle(target_yaw - pose.yaw)
             if abs(error) <= self.yaw_tolerance:
                 return
             angular = proportional_angular_velocity(error, self.angular_speed)
@@ -165,6 +190,13 @@ class TurtleBotActionExecutor:
             angular = proportional_angular_velocity(yaw_error, self.angular_speed)
             self.velocity_publisher.publish_velocity(self.linear_speed, angular)
             self.sleeper(self.control_period)
+
+    def _wait_for_settling(self, deadline: float) -> None:
+        settle_until = self.clock() + self.settling_time
+        while self.clock() < settle_until:
+            self._check_running(deadline)
+            self.stop()
+            self.sleeper(min(self.control_period, settle_until - self.clock()))
 
     def _distance_to_target(self, pose: RobotPose) -> float:
         assert self.target_position is not None

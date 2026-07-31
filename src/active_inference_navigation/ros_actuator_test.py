@@ -66,6 +66,8 @@ def build_actuator(node: Any, config: NavigationConfig) -> tuple[TurtleBotAction
         yaw_tolerance=motion.yaw_tolerance,
         control_period=motion.control_period,
         action_timeout=motion.action_timeout,
+        final_heading=motion.final_heading,
+        settling_time=motion.settling_time,
         shutdown_requested=lambda: not rclpy.ok(),
     )
     return actuator, subscription

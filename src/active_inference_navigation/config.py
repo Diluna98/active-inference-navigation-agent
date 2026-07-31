@@ -139,6 +139,8 @@ class MotionConfig:
     yaw_tolerance: float = 0.03
     control_period: float = 0.05
     action_timeout: float = 30.0
+    final_heading: str | None = "positive_y"
+    settling_time: float = 2.5
 
     def __post_init__(self) -> None:
         if min(
@@ -150,6 +152,14 @@ class MotionConfig:
             self.action_timeout,
         ) <= 0.0:
             raise ValueError("Motion speeds, tolerances, periods, and timeout must be positive.")
+        if self.settling_time < 0.0:
+            raise ValueError("Motion settling_time must not be negative.")
+        valid_headings = {"positive_x", "negative_x", "positive_y", "negative_y"}
+        if self.final_heading is not None and self.final_heading not in valid_headings:
+            raise ValueError(
+                "final_heading must be positive_x, negative_x, positive_y, "
+                "negative_y, or null."
+            )
 
 
 @dataclass(frozen=True)
