@@ -14,6 +14,7 @@ from .likelihoods import (
 from .models import AxisAction, NavigationAction, Observation
 from .runtime import NavigationRuntime, NavigationRuntimeResult
 from .simulation import NavigationEpisodeResult, run_navigation_episode
+from .termination import SourceDistanceTermination
 
 __all__ = [
     "ActionConstraint",
@@ -34,6 +35,7 @@ __all__ = [
     "Observation",
     "ObservationSource",
     "RssiNavigationLikelihood",
+    "SourceDistanceTermination",
     "TerminationCondition",
     "build_navigation_agent",
     "run_navigation_episode",

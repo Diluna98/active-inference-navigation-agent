@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [0.4.0] - 2026-07-31
+
+### Added
+
+- Optional known-source distance termination for controlled real-world
+  demonstrations.
+- Source-cell action exclusion that prevents the robot from entering the
+  transmitter's occupied grid cell.
+
+### Changed
+
+- The packaged 7 m demo configuration terminates within 0.45 m of the known
+  transmitter; generic typed defaults remain signal-based and portable.
+
 ## [0.3.1] - 2026-07-31
 
 ### Fixed
@@ -18,7 +32,6 @@ All notable changes to this project are documented here.
   antenna measurements.
 - Reproducible median-window calibration fitter with leave-one-batch-out
   validation.
-
 ### Changed
 
 - RSSI aggregation now retains the configured last-N samples while using the

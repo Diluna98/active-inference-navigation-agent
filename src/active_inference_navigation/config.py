@@ -106,12 +106,23 @@ class TerminationConfig:
     provider: str = "persistent_rssi"
     rssi_threshold: float = -62.0
     consecutive_observations: int = 3
+    source_x: float | None = None
+    source_y: float | None = None
+    distance_threshold: float = 0.45
 
     def __post_init__(self) -> None:
-        if self.provider not in {"persistent_rssi", "never"}:
+        if self.provider not in {"persistent_rssi", "source_distance", "never"}:
             raise ValueError(f"Unknown termination provider: {self.provider}")
         if self.consecutive_observations < 1:
             raise ValueError("consecutive_observations must be positive.")
+        if self.distance_threshold <= 0.0:
+            raise ValueError("distance_threshold must be positive.")
+        if self.provider == "source_distance" and (
+            self.source_x is None or self.source_y is None
+        ):
+            raise ValueError(
+                "source_distance termination requires source_x and source_y."
+            )
 
 
 @dataclass(frozen=True)
@@ -202,9 +213,16 @@ class NavigationConfig:
     likelihood_provider: str = "bearing_calibrated_dbm"
 
     def __post_init__(self) -> None:
-        self.grid.geometry()
+        geometry = self.grid.geometry()
         self.frame.transform()
         self.experiment.validate_for(self.grid)
+        if self.termination.provider == "source_distance":
+            assert self.termination.source_x is not None
+            assert self.termination.source_y is not None
+            geometry.metric_to_grid(
+                self.termination.source_x,
+                self.termination.source_y,
+            )
         if not self.likelihood_provider.strip():
             raise ValueError("likelihood_provider must not be empty.")
 

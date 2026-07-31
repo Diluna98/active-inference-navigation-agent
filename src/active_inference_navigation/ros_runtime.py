@@ -22,7 +22,11 @@ from .config import NavigationConfig, load_cli_navigation_config
 from .constraints import GridBoundaryConstraint
 from .interfaces import ObservationUnavailableError
 from .runtime import NavigationRuntime, NavigationRuntimeResult
-from .termination import NeverTermination, PersistentRssiTermination
+from .termination import (
+    NeverTermination,
+    PersistentRssiTermination,
+    SourceDistanceTermination,
+)
 
 
 def build_termination_condition(config: NavigationConfig) -> Any:
@@ -36,7 +40,34 @@ def build_termination_condition(config: NavigationConfig) -> Any:
         )
     if termination.provider == "never":
         return NeverTermination()
+    if termination.provider == "source_distance":
+        assert termination.source_x is not None
+        assert termination.source_y is not None
+        return SourceDistanceTermination(
+            source_x=termination.source_x,
+            source_y=termination.source_y,
+            maximum_distance=termination.distance_threshold,
+        )
     raise ValueError(f"Unknown termination provider: {termination.provider}")
+
+
+def build_action_constraint(config: NavigationConfig) -> GridBoundaryConstraint:
+    """Build arena boundaries with an optional known-source blocked cell."""
+
+    geometry = config.grid.geometry()
+    blocked_cells: frozenset[tuple[int, int]] = frozenset()
+    if config.termination.provider == "source_distance":
+        assert config.termination.source_x is not None
+        assert config.termination.source_y is not None
+        blocked_cells = frozenset(
+            {
+                geometry.metric_to_grid(
+                    config.termination.source_x,
+                    config.termination.source_y,
+                )
+            }
+        )
+    return GridBoundaryConstraint(geometry, blocked_cells=blocked_cells)
 
 
 def run_ros_navigation(
@@ -127,7 +158,7 @@ def run_ros_navigation(
         observation_source=source,
         action_executor=actuator,
         termination_condition=build_termination_condition(config),
-        action_constraint=GridBoundaryConstraint(geometry),
+        action_constraint=build_action_constraint(config),
         temporal_horizon=inference.temporal_horizon,
     )
     try:

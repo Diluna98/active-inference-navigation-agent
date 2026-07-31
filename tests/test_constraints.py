@@ -26,6 +26,23 @@ def test_boundary_constraint_allows_all_cardinal_actions_inside_grid():
     assert len(allowed) == 5
 
 
+def test_boundary_constraint_rejects_action_into_blocked_source_cell():
+    geometry = GridGeometry()
+    constraint = GridBoundaryConstraint(
+        geometry,
+        blocked_cells=frozenset({(8, 12)}),
+    )
+    observation = Observation(*geometry.grid_to_metric((8, 11)), -70.0)
+
+    allowed = {
+        tuple(action.as_array())
+        for action in constraint.allowed_actions(observation)
+    }
+
+    assert (0, 2) not in allowed
+    assert (0, 0) in allowed
+
+
 class FakePolicyAgent:
     deep_inference = False
 

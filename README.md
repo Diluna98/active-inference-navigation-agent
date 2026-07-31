@@ -248,14 +248,18 @@ Real navigation stops early when the configured termination condition is met:
 
 ```yaml
 termination:
-  provider: persistent_rssi
-  rssi_threshold: -62.0
-  consecutive_observations: 3
+  provider: source_distance
+  source_x: 2.975
+  source_y: 4.375
+  distance_threshold: 0.45
 ```
 
-The counter uses the already median-aggregated RSSI observation. A reading below
-the threshold resets it. The `--planning-windows` limit remains a maximum-action
-safety bound when the persistent goal condition is not reached.
+This controlled-demo rule stops when odometry places the robot within 0.45 m
+of the known transmitter and blocks actions into the transmitter's grid cell.
+The source coordinates are not supplied to Active Inference and do not affect
+beliefs or action selection. Use `persistent_rssi` when termination must depend
+only on measured signal, or `never` for a fixed planning-window experiment.
+The `--planning-windows` limit remains a maximum-action safety bound.
 
 ## Configuration
 

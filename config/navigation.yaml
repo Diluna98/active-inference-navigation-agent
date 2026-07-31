@@ -29,9 +29,13 @@ experiment:
   start_row: 0
 
 termination:
-  provider: persistent_rssi
+  # Controlled-demo ground truth; this is not passed to Active Inference.
+  provider: source_distance
   rssi_threshold: -62.0
   consecutive_observations: 3
+  source_x: 2.975
+  source_y: 4.375
+  distance_threshold: 0.45
 
 topics:
   odom: /tb4_08/odom

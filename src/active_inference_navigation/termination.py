@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import hypot
 
 from .models import Observation
 
@@ -48,3 +49,24 @@ class PersistentRssiTermination:
         else:
             self._consecutive_hits = 0
         return self._consecutive_hits >= self.consecutive_observations
+
+
+@dataclass(frozen=True)
+class SourceDistanceTermination:
+    """Stop within a configured metric distance of a known evaluation source."""
+
+    source_x: float
+    source_y: float
+    maximum_distance: float
+
+    def __post_init__(self) -> None:
+        if self.maximum_distance <= 0.0:
+            raise ValueError("maximum_distance must be positive.")
+
+    def is_met(self, observation: Observation) -> bool:
+        """Return whether odometry places the robot close enough to the source."""
+
+        return (
+            hypot(observation.x - self.source_x, observation.y - self.source_y)
+            <= self.maximum_distance
+        )
