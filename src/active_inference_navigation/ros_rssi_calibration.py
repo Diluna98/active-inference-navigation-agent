@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from math import atan2, cos, hypot, pi, sin
@@ -18,9 +19,11 @@ from typing import Any, TextIO
 
 from .config import load_cli_navigation_config
 from .frame import ArenaFrameTransform
+from .geometry import GridGeometry
 from .interfaces import ActionExecutionError
 from .models import NavigationAction
 from .ros_actuator_test import build_actuator, parse_action, wait_for_odometry
+from .ros_return_home import action_name, plan_return_actions
 
 CSV_FIELDNAMES = (
     "sample_index",
@@ -293,6 +296,37 @@ def parse_movement_command(command: str) -> NavigationAction:
     return parse_action(action_name)
 
 
+def parse_target_cell(command: str) -> tuple[int, int] | None:
+    """Parse ``(column,row)`` or ``column,row`` and return ``None`` otherwise."""
+
+    match = re.fullmatch(
+        r"\s*(?:\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)|(-?\d+)\s*,\s*(-?\d+))\s*",
+        command,
+    )
+    if match is None:
+        return None
+    values = match.group(1, 2) if match.group(1) is not None else match.group(3, 4)
+    return int(values[0]), int(values[1])
+
+
+def plan_calibration_movement(
+    command: str,
+    current_cell: tuple[int, int],
+    geometry: GridGeometry,
+) -> tuple[NavigationAction, ...]:
+    """Plan one cardinal command or an x-then-y path to an absolute cell."""
+
+    target_cell = parse_target_cell(command)
+    if target_cell is not None:
+        if not geometry.contains_cell(target_cell):
+            raise ValueError(f"Target grid cell {target_cell} is outside the arena.")
+        return plan_return_actions(current_cell, target_cell)
+
+    action = parse_movement_command(command)
+    geometry.target_cell(current_cell, action)
+    return (action,)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Collect stationary RSSI/odometry pairs while driving with teleop."
@@ -433,15 +467,42 @@ def main() -> None:
                     )
                     while rclpy.ok():
                         command = input(
-                            "Move one cell [up/down/left/right] or quit [q]: "
+                            "Move [up/down/left/right], target cell [(x,y)], "
+                            "or quit [q]: "
                         ).strip()
                         if command.lower() in {"q", "quit", "exit"}:
                             quit_requested = True
                             break
                         try:
-                            action = parse_movement_command(command)
-                            actuator.execute(action)
-                            actuator.wait_for_completion()
+                            pose = actuator.pose_provider()
+                            arena_position = config.frame.transform().position_to_arena(
+                                pose.x,
+                                pose.y,
+                            )
+                            current_cell = config.grid.geometry().metric_to_grid(
+                                *arena_position
+                            )
+                            actions = plan_calibration_movement(
+                                command,
+                                current_cell,
+                                config.grid.geometry(),
+                            )
+                            target_cell = parse_target_cell(command)
+                            if target_cell is not None:
+                                print(
+                                    f"Moving from cell {current_cell} to "
+                                    f"{target_cell} in {len(actions)} step(s).",
+                                    flush=True,
+                                )
+                            for step, action in enumerate(actions, start=1):
+                                if len(actions) > 1:
+                                    print(
+                                        f"step {step}/{len(actions)}: "
+                                        f"{action_name(action)}",
+                                        flush=True,
+                                    )
+                                actuator.execute(action)
+                                actuator.wait_for_completion()
                         except (ValueError, ActionExecutionError) as error:
                             actuator.stop()
                             print(f"Movement rejected: {error}", flush=True)

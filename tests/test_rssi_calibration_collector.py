@@ -4,9 +4,12 @@ from types import SimpleNamespace
 import pytest
 
 from active_inference_navigation.frame import ArenaFrameTransform
+from active_inference_navigation.geometry import GridGeometry
 from active_inference_navigation.ros_rssi_calibration import (
     RssiCalibrationCollector,
     parse_movement_command,
+    parse_target_cell,
+    plan_calibration_movement,
 )
 
 
@@ -153,3 +156,44 @@ def test_collector_stops_exactly_at_requested_batch_size() -> None:
 )
 def test_parse_movement_command_uses_arena_directions(command, expected) -> None:
     assert tuple(parse_movement_command(command).as_array()) == expected
+
+
+@pytest.mark.parametrize(
+    ("command", "expected"),
+    [
+        ("(8,12)", (8, 12)),
+        (" ( 8, 12 ) ", (8, 12)),
+        ("8,12", (8, 12)),
+        ("up", None),
+    ],
+)
+def test_parse_target_cell(command, expected) -> None:
+    assert parse_target_cell(command) == expected
+
+
+def test_plan_calibration_movement_builds_path_to_absolute_cell() -> None:
+    actions = plan_calibration_movement(
+        "(3,2)",
+        current_cell=(1, 1),
+        geometry=GridGeometry(columns=5, rows=5, width=5.0, height=5.0),
+    )
+
+    assert [tuple(action.as_array()) for action in actions] == [
+        (2, 0),
+        (2, 0),
+        (0, 2),
+    ]
+
+
+def test_plan_calibration_movement_accepts_same_cell() -> None:
+    geometry = GridGeometry(columns=5, rows=5, width=5.0, height=5.0)
+
+    assert plan_calibration_movement("2,3", (2, 3), geometry) == ()
+
+
+@pytest.mark.parametrize("command", ["(20,0)", "left"])
+def test_plan_calibration_movement_rejects_boundary_crossing(command) -> None:
+    geometry = GridGeometry()
+
+    with pytest.raises(ValueError, match="outside"):
+        plan_calibration_movement(command, (0, 0), geometry)
