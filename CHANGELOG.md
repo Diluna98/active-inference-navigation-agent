@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.1] - 2026-07-31
+
+### Fixed
+
+- Package the reusable RSSI calibration fitter under
+  `active_inference_navigation` so tests and installed tools do not depend on
+  importing the repository-only `scripts` directory.
+
 ## [0.3.0] - 2026-07-31
 
 ### Added

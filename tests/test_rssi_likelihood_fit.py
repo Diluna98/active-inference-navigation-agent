@@ -1,6 +1,6 @@
 import numpy as np
 
-from scripts.fit_rssi_likelihood import AggregatedObservation, fit
+from active_inference_navigation.calibration_fit import AggregatedObservation, fit
 
 
 def test_bearing_fitter_recovers_synthetic_coefficients():
