@@ -76,6 +76,7 @@ class TurtleBotActionExecutor:
     target_position: tuple[float, float] | None = field(default=None, init=False)
     _target_yaw: float | None = field(default=None, init=False, repr=False)
     _final_yaw: float | None = field(default=None, init=False, repr=False)
+    _settle_after_completion: bool = field(default=True, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if min(
@@ -95,8 +96,14 @@ class TurtleBotActionExecutor:
                 "negative_y, or null."
             )
 
-    def execute(self, action: NavigationAction) -> None:
-        """Validate an action and calculate its metric displacement target."""
+    def execute(
+        self,
+        action: NavigationAction,
+        *,
+        restore_final_heading: bool = True,
+        settle_after_completion: bool = True,
+    ) -> None:
+        """Prepare one action, optionally deferring final heading and settling."""
 
         if not isinstance(action, NavigationAction):
             raise TypeError("TurtleBotActionExecutor requires a NavigationAction.")
@@ -107,7 +114,10 @@ class TurtleBotActionExecutor:
         )
         current_cell = self.geometry.metric_to_grid(*current_arena)
         target_cell = self.geometry.target_cell(current_cell, action)
-        self._final_yaw = self._configured_final_yaw()
+        self._final_yaw = (
+            self._configured_final_yaw() if restore_final_heading else None
+        )
+        self._settle_after_completion = settle_after_completion
         delta_x, delta_y = action.cell_delta
         if delta_x == 0 and delta_y == 0:
             self.target_position = (current_pose.x, current_pose.y)
@@ -135,7 +145,8 @@ class TurtleBotActionExecutor:
             if self._final_yaw is not None:
                 self._rotate_to_yaw(self._final_yaw, deadline)
             self.stop()
-            self._wait_for_settling(deadline)
+            if self._settle_after_completion:
+                self._wait_for_settling(deadline)
         except Exception as error:
             self.stop()
             if isinstance(error, ActionExecutionError):
@@ -145,6 +156,7 @@ class TurtleBotActionExecutor:
             self.target_position = None
             self._target_yaw = None
             self._final_yaw = None
+            self._settle_after_completion = True
 
     def stop(self) -> None:
         """Command zero velocity."""

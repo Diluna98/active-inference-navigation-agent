@@ -136,6 +136,23 @@ def test_executor_restores_positive_arena_x_heading_by_default():
     assert robot.pose.yaw == pytest.approx(0.0, abs=0.015)
 
 
+def test_executor_can_defer_final_heading_and_settling_for_path_step():
+    robot = SimulatedRobot(RobotPose(0.175, 0.175, 1.0))
+    executor = build_executor(robot, settling_time=0.5)
+    executor.execute(
+        NavigationAction.from_sequence((0, 0)),
+        restore_final_heading=False,
+        settle_after_completion=False,
+    )
+
+    executor.wait_for_completion()
+
+    assert robot.pose.yaw == pytest.approx(1.0)
+    assert robot.elapsed == pytest.approx(0.0)
+    assert robot.linear == 0.0
+    assert robot.angular == 0.0
+
+
 def test_executor_transforms_final_arena_heading_to_odometry_frame():
     robot = SimulatedRobot(RobotPose(0.0, 0.0, 1.0))
     executor = build_executor(

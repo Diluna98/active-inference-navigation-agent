@@ -230,10 +230,12 @@ collector transforms odometry using the configured arena frame, calculates the
 horizontal distance to the known BLE source, and saves every accepted raw RSSI
 packet to CSV. After collecting the requested number of samples, it accepts
 `up`, `down`, `left`, or `right` for a one-cell movement, or an absolute target
-such as `(8,12)`. Absolute targets use a validated x-then-y Manhattan path.
-Every step uses the closed-loop TurtleBot actuator, restores
-`motion.final_heading`, and respects grid boundaries. The next batch starts
-after arrival. The default final heading is arena positive x. Collection pauses
+such as `(8,12)`. The source coordinate is converted to a blocked grid cell,
+and absolute targets use a shortest cardinal path that respects both this
+obstacle and grid boundaries. Intermediate steps retain their movement heading
+and skip the measurement settling delay. Only the final step restores
+`motion.final_heading` and settles before the next batch starts. The default
+final heading is arena positive x. Collection pauses
 automatically while the robot moves, before settling completes, when the
 heading is outside tolerance, or when odometry is stale. Enter `q` or press
 Ctrl+C to finish. Use `--required-heading any` only when deliberately measuring

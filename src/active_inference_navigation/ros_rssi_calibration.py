@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from math import atan2, cos, hypot, pi, sin
@@ -23,7 +24,7 @@ from .geometry import GridGeometry
 from .interfaces import ActionExecutionError
 from .models import NavigationAction
 from .ros_actuator_test import build_actuator, parse_action, wait_for_odometry
-from .ros_return_home import action_name, plan_return_actions
+from .ros_return_home import action_name
 
 CSV_FIELDNAMES = (
     "sample_index",
@@ -313,18 +314,90 @@ def plan_calibration_movement(
     command: str,
     current_cell: tuple[int, int],
     geometry: GridGeometry,
+    *,
+    blocked_cells: frozenset[tuple[int, int]] = frozenset(),
 ) -> tuple[NavigationAction, ...]:
-    """Plan one cardinal command or an x-then-y path to an absolute cell."""
+    """Plan one cardinal command or a shortest safe path to an absolute cell."""
 
     target_cell = parse_target_cell(command)
     if target_cell is not None:
-        if not geometry.contains_cell(target_cell):
-            raise ValueError(f"Target grid cell {target_cell} is outside the arena.")
-        return plan_return_actions(current_cell, target_cell)
+        return plan_grid_path(
+            current_cell,
+            target_cell,
+            geometry,
+            blocked_cells=blocked_cells,
+        )
 
     action = parse_movement_command(command)
-    geometry.target_cell(current_cell, action)
+    target_cell = geometry.target_cell(current_cell, action)
+    if target_cell in blocked_cells:
+        raise ValueError(f"Movement would enter blocked grid cell {target_cell}.")
     return (action,)
+
+
+def plan_grid_path(
+    current_cell: tuple[int, int],
+    target_cell: tuple[int, int],
+    geometry: GridGeometry,
+    *,
+    blocked_cells: frozenset[tuple[int, int]] = frozenset(),
+) -> tuple[NavigationAction, ...]:
+    """Find a shortest cardinal grid path without entering blocked cells."""
+
+    if not geometry.contains_cell(current_cell):
+        raise ValueError(f"Current grid cell {current_cell} is outside the arena.")
+    if not geometry.contains_cell(target_cell):
+        raise ValueError(f"Target grid cell {target_cell} is outside the arena.")
+    if current_cell in blocked_cells:
+        raise ValueError(f"Current grid cell {current_cell} is blocked.")
+    if target_cell in blocked_cells:
+        raise ValueError(f"Target grid cell {target_cell} is blocked.")
+    if current_cell == target_cell:
+        return ()
+
+    actions = (
+        parse_action("positive_x"),
+        parse_action("negative_x"),
+        parse_action("positive_y"),
+        parse_action("negative_y"),
+    )
+    frontier = deque([current_cell])
+    parents: dict[
+        tuple[int, int],
+        tuple[tuple[int, int], NavigationAction] | None,
+    ] = {current_cell: None}
+
+    while frontier:
+        cell = frontier.popleft()
+        candidates: list[tuple[int, tuple[int, int], NavigationAction]] = []
+        for action in actions:
+            delta_x, delta_y = action.cell_delta
+            neighbor = cell[0] + delta_x, cell[1] + delta_y
+            if (
+                not geometry.contains_cell(neighbor)
+                or neighbor in blocked_cells
+                or neighbor in parents
+            ):
+                continue
+            remaining_distance = abs(target_cell[0] - neighbor[0]) + abs(
+                target_cell[1] - neighbor[1]
+            )
+            candidates.append((remaining_distance, neighbor, action))
+
+        for _, neighbor, action in sorted(candidates, key=lambda item: item[0]):
+            parents[neighbor] = cell, action
+            if neighbor == target_cell:
+                path: list[NavigationAction] = []
+                cursor = target_cell
+                while cursor != current_cell:
+                    parent = parents[cursor]
+                    assert parent is not None
+                    cursor, previous_action = parent
+                    path.append(previous_action)
+                return tuple(reversed(path))
+            frontier.append(neighbor)
+
+    raise ValueError(f"No safe grid path exists from {current_cell} to {target_cell}.")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -362,6 +435,10 @@ def main() -> None:
 
     args = _build_parser().parse_args()
     config = load_cli_navigation_config(args.config)
+    geometry = config.grid.geometry()
+    frame_transform = config.frame.transform()
+    source_cell = geometry.metric_to_grid(args.source_x, args.source_y)
+    blocked_cells = frozenset({source_cell})
     if args.progress_every < 1:
         raise ValueError("--progress-every must be positive.")
     if args.samples_per_location < 1:
@@ -403,7 +480,7 @@ def main() -> None:
             collector = RssiCalibrationCollector(
                 source_x=args.source_x,
                 source_y=args.source_y,
-                frame_transform=config.frame.transform(),
+                frame_transform=frame_transform,
                 row_sink=sink,
                 settling_time=args.settling_time,
                 max_linear_speed=args.max_linear_speed,
@@ -447,7 +524,8 @@ def main() -> None:
             actuator.wait_for_completion()
             node.get_logger().info(
                 "Interactive RSSI collection is ready. "
-                f"Source arena position=({args.source_x:.3f}, {args.source_y:.3f}) m."
+                f"Source arena position=({args.source_x:.3f}, {args.source_y:.3f}) m; "
+                f"blocked source cell={source_cell}."
             )
             try:
                 quit_requested = False
@@ -475,17 +553,16 @@ def main() -> None:
                             break
                         try:
                             pose = actuator.pose_provider()
-                            arena_position = config.frame.transform().position_to_arena(
+                            arena_position = frame_transform.position_to_arena(
                                 pose.x,
                                 pose.y,
                             )
-                            current_cell = config.grid.geometry().metric_to_grid(
-                                *arena_position
-                            )
+                            current_cell = geometry.metric_to_grid(*arena_position)
                             actions = plan_calibration_movement(
                                 command,
                                 current_cell,
-                                config.grid.geometry(),
+                                geometry,
+                                blocked_cells=blocked_cells,
                             )
                             target_cell = parse_target_cell(command)
                             if target_cell is not None:
@@ -495,13 +572,18 @@ def main() -> None:
                                     flush=True,
                                 )
                             for step, action in enumerate(actions, start=1):
+                                final_step = step == len(actions)
                                 if len(actions) > 1:
                                     print(
                                         f"step {step}/{len(actions)}: "
                                         f"{action_name(action)}",
                                         flush=True,
                                     )
-                                actuator.execute(action)
+                                actuator.execute(
+                                    action,
+                                    restore_final_heading=final_step,
+                                    settle_after_completion=final_step,
+                                )
                                 actuator.wait_for_completion()
                         except (ValueError, ActionExecutionError) as error:
                             actuator.stop()

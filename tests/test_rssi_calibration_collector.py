@@ -10,6 +10,7 @@ from active_inference_navigation.ros_rssi_calibration import (
     parse_movement_command,
     parse_target_cell,
     plan_calibration_movement,
+    plan_grid_path,
 )
 
 
@@ -183,6 +184,47 @@ def test_plan_calibration_movement_builds_path_to_absolute_cell() -> None:
         (2, 0),
         (0, 2),
     ]
+
+
+def test_grid_path_avoids_blocked_source_cell() -> None:
+    geometry = GridGeometry()
+    blocked_source = (8, 12)
+    actions = plan_grid_path(
+        current_cell=(7, 12),
+        target_cell=(9, 12),
+        geometry=geometry,
+        blocked_cells=frozenset({blocked_source}),
+    )
+    visited = []
+    cell = (7, 12)
+    for action in actions:
+        delta_x, delta_y = action.cell_delta
+        cell = cell[0] + delta_x, cell[1] + delta_y
+        visited.append(cell)
+
+    assert cell == (9, 12)
+    assert blocked_source not in visited
+    assert len(actions) == 4
+
+
+def test_grid_path_rejects_blocked_target_cell() -> None:
+    with pytest.raises(ValueError, match="blocked"):
+        plan_grid_path(
+            current_cell=(7, 12),
+            target_cell=(8, 12),
+            geometry=GridGeometry(),
+            blocked_cells=frozenset({(8, 12)}),
+        )
+
+
+def test_cardinal_movement_rejects_blocked_source_cell() -> None:
+    with pytest.raises(ValueError, match="blocked"):
+        plan_calibration_movement(
+            "right",
+            current_cell=(7, 12),
+            geometry=GridGeometry(),
+            blocked_cells=frozenset({(8, 12)}),
+        )
 
 
 def test_plan_calibration_movement_accepts_same_cell() -> None:
