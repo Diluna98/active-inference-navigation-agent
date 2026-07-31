@@ -213,6 +213,30 @@ Return-home does not read RSSI or invoke Active Inference. It calculates an
 x-then-y Manhattan path and executes each cardinal action using the same
 closed-loop, transformed-frame actuator.
 
+To collect a new distance/RSSI calibration with interactive one-cell movements,
+run:
+
+```bash
+active-inference-rssi-collect \
+  --config config/navigation.yaml \
+  --source-x 2.975 \
+  --source-y 4.375 \
+  --output rssi_calibration_raw.csv \
+  --samples-per-location 100
+```
+
+The source coordinates are continuous arena coordinates in metres. The
+collector transforms odometry using the configured arena frame, calculates the
+horizontal distance to the known BLE source, and saves every accepted raw RSSI
+packet to CSV. After collecting the requested number of samples, it asks for
+`up`, `down`, `left`, or `right`, executes that one-cell movement using the
+closed-loop TurtleBot actuator, restores `motion.final_heading`, and collects
+the next batch. The default final heading is arena positive x. Collection
+pauses automatically while the robot moves, before settling completes, when
+the heading is outside tolerance, or when odometry is stale. Enter `q` or press
+Ctrl+C to finish. Use `--required-heading any` only when deliberately measuring
+antenna-orientation effects.
+
 Real navigation stops early when the configured termination condition is met:
 
 ```yaml

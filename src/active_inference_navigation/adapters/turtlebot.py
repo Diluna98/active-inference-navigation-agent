@@ -68,7 +68,7 @@ class TurtleBotActionExecutor:
     yaw_tolerance: float = 0.03
     control_period: float = 0.05
     action_timeout: float = 30.0
-    final_heading: str | None = "positive_y"
+    final_heading: str | None = "positive_x"
     settling_time: float = 2.5
     clock: Callable[[], float] = monotonic
     sleeper: Callable[[float], None] = sleep

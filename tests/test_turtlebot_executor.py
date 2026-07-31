@@ -117,13 +117,23 @@ def test_executor_rotates_moves_and_stops_at_target():
 
 def test_executor_restores_positive_arena_y_heading_after_x_motion():
     robot = SimulatedRobot(RobotPose(0.175, 0.175, 0.0))
-    executor = build_executor(robot, settling_time=0.2)
+    executor = build_executor(robot, final_heading="positive_y", settling_time=0.2)
     executor.execute(NavigationAction.from_sequence((2, 0)))
 
     executor.wait_for_completion()
 
     assert robot.pose.yaw == pytest.approx(3.141592653589793 / 2.0, abs=0.015)
     assert robot.elapsed >= 0.2
+
+
+def test_executor_restores_positive_arena_x_heading_by_default():
+    robot = SimulatedRobot(RobotPose(0.175, 0.175, 1.0))
+    executor = build_executor(robot, settling_time=0.0)
+    executor.execute(NavigationAction.from_sequence((0, 0)))
+
+    executor.wait_for_completion()
+
+    assert robot.pose.yaw == pytest.approx(0.0, abs=0.015)
 
 
 def test_executor_transforms_final_arena_heading_to_odometry_frame():
@@ -136,6 +146,7 @@ def test_executor_transforms_final_arena_heading_to_odometry_frame():
             odom_zero_arena_x=0.175,
             odom_zero_arena_y=0.175,
         ),
+        final_heading="positive_y",
         settling_time=0.0,
     )
     executor.execute(NavigationAction.from_sequence((0, 0)))

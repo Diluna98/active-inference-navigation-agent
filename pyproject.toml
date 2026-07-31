@@ -33,6 +33,7 @@ active-inference-navigation-gif = "active_inference_navigation.animation:main"
 active-inference-navigation-ros = "active_inference_navigation.ros_runtime:main"
 active-inference-actuator-test = "active_inference_navigation.ros_actuator_test:main"
 active-inference-return-home = "active_inference_navigation.ros_return_home:main"
+active-inference-rssi-collect = "active_inference_navigation.ros_rssi_calibration:main"
 
 [project.optional-dependencies]
 dev = [
