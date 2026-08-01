@@ -16,6 +16,8 @@ from .adapters.turtlebot import (
 from .config import NavigationConfig, load_cli_navigation_config
 from .interfaces import ActionExecutionError
 from .models import NavigationAction
+from .ros_runtime import build_termination_condition
+from .termination import SourceFootprintTermination
 
 ACTION_VALUES = {
     "stay": (0, 0),
@@ -55,6 +57,7 @@ def build_actuator(node: Any, config: NavigationConfig) -> tuple[TurtleBotAction
     )
     publisher = node.create_publisher(Twist, config.topics.cmd_vel, 10)
     motion = config.motion
+    termination = build_termination_condition(config)
     actuator = TurtleBotActionExecutor(
         geometry=config.grid.geometry(),
         pose_provider=pose_store.read,
@@ -69,6 +72,11 @@ def build_actuator(node: Any, config: NavigationConfig) -> tuple[TurtleBotAction
         final_heading=motion.final_heading,
         settling_time=motion.settling_time,
         shutdown_requested=lambda: not rclpy.ok(),
+        movement_stop_condition=(
+            termination.is_position_met
+            if isinstance(termination, SourceFootprintTermination)
+            else None
+        ),
     )
     return actuator, subscription
 

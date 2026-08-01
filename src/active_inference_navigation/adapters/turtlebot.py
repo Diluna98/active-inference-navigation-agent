@@ -73,6 +73,7 @@ class TurtleBotActionExecutor:
     clock: Callable[[], float] = monotonic
     sleeper: Callable[[float], None] = sleep
     shutdown_requested: Callable[[], bool] = lambda: False
+    movement_stop_condition: Callable[[float, float], bool] | None = None
     target_position: tuple[float, float] | None = field(default=None, init=False)
     _target_yaw: float | None = field(default=None, init=False, repr=False)
     _final_yaw: float | None = field(default=None, init=False, repr=False)
@@ -192,6 +193,13 @@ class TurtleBotActionExecutor:
         while True:
             self._check_running(deadline)
             pose = self.pose_provider()
+            if self.movement_stop_condition is not None:
+                arena_x, arena_y = self.frame_transform.position_to_arena(
+                    pose.x,
+                    pose.y,
+                )
+                if self.movement_stop_condition(arena_x, arena_y):
+                    return
             if self._distance_to_target(pose) <= self.position_tolerance:
                 return
             desired_yaw = atan2(

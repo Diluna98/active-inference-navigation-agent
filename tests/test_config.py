@@ -48,9 +48,13 @@ def test_repository_yaml_loads():
     assert config.active_inference.goal_resolution == 10
     assert config.sensors.rssi_median_window == 5
     assert config.likelihood_provider == "bearing_calibrated_dbm"
-    assert config.termination.provider == "source_distance"
+    assert config.termination.provider == "source_footprint"
     assert config.termination.source_x == pytest.approx(2.975)
     assert config.termination.source_y == pytest.approx(4.375)
+    assert config.termination.source_body_direction == "positive_y"
+    assert config.termination.transmitter_radius == pytest.approx(0.165)
+    assert config.termination.navigation_robot_radius == pytest.approx(0.165)
+    assert config.termination.safety_clearance == pytest.approx(0.10)
 
 
 def test_packaged_default_matches_repository_yaml():

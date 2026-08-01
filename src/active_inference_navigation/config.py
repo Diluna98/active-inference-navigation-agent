@@ -109,20 +109,40 @@ class TerminationConfig:
     source_x: float | None = None
     source_y: float | None = None
     distance_threshold: float = 0.45
+    source_body_direction: str = "positive_y"
+    transmitter_radius: float = 0.165
+    navigation_robot_radius: float = 0.165
+    safety_clearance: float = 0.10
 
     def __post_init__(self) -> None:
-        if self.provider not in {"persistent_rssi", "source_distance", "never"}:
+        if self.provider not in {
+            "persistent_rssi",
+            "source_distance",
+            "source_footprint",
+            "never",
+        }:
             raise ValueError(f"Unknown termination provider: {self.provider}")
         if self.consecutive_observations < 1:
             raise ValueError("consecutive_observations must be positive.")
         if self.distance_threshold <= 0.0:
             raise ValueError("distance_threshold must be positive.")
-        if self.provider == "source_distance" and (
+        if self.provider in {"source_distance", "source_footprint"} and (
             self.source_x is None or self.source_y is None
         ):
             raise ValueError(
-                "source_distance termination requires source_x and source_y."
+                f"{self.provider} termination requires source_x and source_y."
             )
+        if self.source_body_direction not in {
+            "positive_x",
+            "negative_x",
+            "positive_y",
+            "negative_y",
+        }:
+            raise ValueError("Unknown source_body_direction.")
+        if self.transmitter_radius <= 0.0 or self.navigation_robot_radius <= 0.0:
+            raise ValueError("Robot footprint radii must be positive.")
+        if self.safety_clearance < 0.0:
+            raise ValueError("safety_clearance must not be negative.")
 
 
 @dataclass(frozen=True)
@@ -216,7 +236,7 @@ class NavigationConfig:
         geometry = self.grid.geometry()
         self.frame.transform()
         self.experiment.validate_for(self.grid)
-        if self.termination.provider == "source_distance":
+        if self.termination.provider in {"source_distance", "source_footprint"}:
             assert self.termination.source_x is not None
             assert self.termination.source_y is not None
             geometry.metric_to_grid(

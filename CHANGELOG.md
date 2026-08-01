@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.0] - 2026-08-01
+
+### Added
+
+- Footprint-aware source termination for a BLE antenna mounted at the edge of
+  another robot.
+- Continuous-motion goal stopping using transmitter radius, navigation-robot
+  radius, body direction, and configurable safety clearance.
+
+### Changed
+
+- The controlled demo no longer rejects an action toward the occupied source.
+  The actuator executes it only to the safe goal boundary, after which the
+  shared termination condition ends the episode.
+
 ## [0.4.0] - 2026-07-31
 
 ### Added

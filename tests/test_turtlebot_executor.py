@@ -13,6 +13,7 @@ from active_inference_navigation.frame import ArenaFrameTransform
 from active_inference_navigation.geometry import GridGeometry
 from active_inference_navigation.interfaces import ActionExecutionError
 from active_inference_navigation.models import NavigationAction
+from active_inference_navigation.termination import SourceFootprintTermination
 
 
 @dataclass
@@ -151,6 +152,32 @@ def test_executor_can_defer_final_heading_and_settling_for_path_step():
     assert robot.elapsed == pytest.approx(0.0)
     assert robot.linear == 0.0
     assert robot.angular == 0.0
+
+
+def test_executor_truncates_action_at_safe_source_footprint_goal():
+    robot = SimulatedRobot(RobotPose(2.975, 4.025, 3.141592653589793 / 2.0))
+    goal = SourceFootprintTermination(
+        source_x=2.975,
+        source_y=4.375,
+        body_direction="positive_y",
+        transmitter_radius=0.165,
+        navigation_robot_radius=0.165,
+        safety_clearance=0.10,
+    )
+    executor = build_executor(
+        robot,
+        final_heading=None,
+        settling_time=0.0,
+        movement_stop_condition=goal.is_position_met,
+    )
+    executor.execute(NavigationAction.from_sequence((0, 2)))
+
+    executor.wait_for_completion()
+
+    assert robot.pose.y == pytest.approx(4.110, abs=0.01)
+    assert robot.pose.y < 4.375
+    assert goal.is_position_met(robot.pose.x, robot.pose.y)
+    assert robot.linear == 0.0
 
 
 def test_executor_transforms_final_arena_heading_to_odometry_frame():

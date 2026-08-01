@@ -26,6 +26,7 @@ from .termination import (
     NeverTermination,
     PersistentRssiTermination,
     SourceDistanceTermination,
+    SourceFootprintTermination,
 )
 
 
@@ -47,6 +48,17 @@ def build_termination_condition(config: NavigationConfig) -> Any:
             source_x=termination.source_x,
             source_y=termination.source_y,
             maximum_distance=termination.distance_threshold,
+        )
+    if termination.provider == "source_footprint":
+        assert termination.source_x is not None
+        assert termination.source_y is not None
+        return SourceFootprintTermination(
+            source_x=termination.source_x,
+            source_y=termination.source_y,
+            body_direction=termination.source_body_direction,
+            transmitter_radius=termination.transmitter_radius,
+            navigation_robot_radius=termination.navigation_robot_radius,
+            safety_clearance=termination.safety_clearance,
         )
     raise ValueError(f"Unknown termination provider: {termination.provider}")
 
@@ -87,6 +99,7 @@ def run_ros_navigation(
 
     geometry = config.grid.geometry()
     frame_transform = config.frame.transform()
+    termination_condition = build_termination_condition(config)
     source = RosObservationSource(
         rssi_median_window=config.sensors.rssi_median_window,
         odom_timeout=config.sensors.odom_timeout,
@@ -120,6 +133,11 @@ def run_ros_navigation(
         final_heading=config.motion.final_heading,
         settling_time=config.motion.settling_time,
         shutdown_requested=lambda: not rclpy.ok(),
+        movement_stop_condition=(
+            termination_condition.is_position_met
+            if isinstance(termination_condition, SourceFootprintTermination)
+            else None
+        ),
     )
     inference = config.active_inference
     agent = build_navigation_agent(
@@ -157,7 +175,7 @@ def run_ros_navigation(
         agent=agent,
         observation_source=source,
         action_executor=actuator,
-        termination_condition=build_termination_condition(config),
+        termination_condition=termination_condition,
         action_constraint=build_action_constraint(config),
         temporal_horizon=inference.temporal_horizon,
     )

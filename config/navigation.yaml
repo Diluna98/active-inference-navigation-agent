@@ -29,13 +29,18 @@ experiment:
   start_row: 0
 
 termination:
-  # Controlled-demo ground truth; this is not passed to Active Inference.
-  provider: source_distance
+  # The source is mounted at the midpoint of the transmitter TurtleBot edge.
+  # These ground-truth values are not passed to Active Inference.
+  provider: source_footprint
   rssi_threshold: -62.0
   consecutive_observations: 3
   source_x: 2.975
   source_y: 4.375
   distance_threshold: 0.45
+  source_body_direction: positive_y
+  transmitter_radius: 0.165
+  navigation_robot_radius: 0.165
+  safety_clearance: 0.10
 
 topics:
   odom: /tb4_08/odom

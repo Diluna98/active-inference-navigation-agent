@@ -2,9 +2,11 @@ import numpy as np
 import pytest
 
 from active_inference_navigation.agent import CardinalNavigationAgent
+from active_inference_navigation.config import NavigationConfig, TerminationConfig
 from active_inference_navigation.constraints import GridBoundaryConstraint
 from active_inference_navigation.geometry import GridGeometry
 from active_inference_navigation.models import Observation
+from active_inference_navigation.ros_runtime import build_action_constraint
 
 
 def test_boundary_constraint_masks_outward_actions_at_lower_left():
@@ -41,6 +43,27 @@ def test_boundary_constraint_rejects_action_into_blocked_source_cell():
 
     assert (0, 2) not in allowed
     assert (0, 0) in allowed
+
+
+def test_source_footprint_goal_does_not_reject_action_toward_source():
+    config = NavigationConfig(
+        termination=TerminationConfig(
+            provider="source_footprint",
+            source_x=2.975,
+            source_y=4.375,
+            source_body_direction="positive_y",
+        )
+    )
+    geometry = config.grid.geometry()
+    constraint = build_action_constraint(config)
+    observation = Observation(*geometry.grid_to_metric((8, 11)), -70.0)
+
+    allowed = {
+        tuple(action.as_array())
+        for action in constraint.allowed_actions(observation)
+    }
+
+    assert (0, 2) in allowed
 
 
 class FakePolicyAgent:

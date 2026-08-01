@@ -248,18 +248,32 @@ Real navigation stops early when the configured termination condition is met:
 
 ```yaml
 termination:
-  provider: source_distance
+  provider: source_footprint
   source_x: 2.975
   source_y: 4.375
-  distance_threshold: 0.45
+  source_body_direction: positive_y
+  transmitter_radius: 0.165
+  navigation_robot_radius: 0.165
+  safety_clearance: 0.10
 ```
 
-This controlled-demo rule stops when odometry places the robot within 0.45 m
-of the known transmitter and blocks actions into the transmitter's grid cell.
-The source coordinates are not supplied to Active Inference and do not affect
-beliefs or action selection. Use `persistent_rssi` when termination must depend
-only on measured signal, or `never` for a fixed planning-window experiment.
-The `--planning-windows` limit remains a maximum-action safety bound.
+Here the BLE antenna is at the midpoint of the transmitter TurtleBot edge and
+its body extends toward arena positive y. The transmitter center is therefore
+`(2.975, 4.540)`. The actuator executes the selected action normally but stops
+translation as soon as the robot centers are within:
+
+```text
+0.165 + 0.165 + 0.10 = 0.430 m
+```
+
+The next odometry observation satisfies the same footprint-based termination
+condition, so the episode ends without presenting a rejected action or an
+unchanged-state transition to the agent. The source and footprint geometry are
+not supplied to Active Inference and do not affect beliefs or action selection.
+The older `source_distance` provider remains available for unobstructed point
+sources. Use `persistent_rssi` when termination must depend only on measured
+signal, or `never` for a fixed planning-window experiment. The
+`--planning-windows` limit remains a maximum-action safety bound.
 
 ## Configuration
 
