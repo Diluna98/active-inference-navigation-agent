@@ -69,6 +69,7 @@ class ActiveInferenceConfig:
     exact_state_limit: int = 100
     random_seed: int = 0
     policy_workers: int = 1
+    average_future_states: bool = False
     normalized_signal_preference: bool = False
 
     def __post_init__(self) -> None:
@@ -81,6 +82,8 @@ class ActiveInferenceConfig:
             self.policy_workers,
         ) < 1:
             raise ValueError("Active Inference dimensions and iteration counts must be positive.")
+        if not isinstance(self.average_future_states, bool):
+            raise TypeError("average_future_states must be a boolean.")
 
 
 @dataclass(frozen=True)

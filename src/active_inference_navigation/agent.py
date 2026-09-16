@@ -10,7 +10,7 @@ import numpy as np
 from PyAIF import (
     ActiveInfAgent,
     ContinuousLikelihood,
-    DeepTemporalInference,
+    FilteredRecedingHorizonInference,
     GenerativeModel,
     ShallowInference,
     utils,
@@ -100,6 +100,7 @@ class NavigationAgentConfig:
     exact_state_limit: int = 100
     random_seed: int = 0
     policy_workers: int = 1
+    average_future_states: bool = False
     normalized_signal_preference: bool = False
     likelihood_provider: str = "rssi_navigation"
     reference_rssi: float = -63.109
@@ -138,7 +139,11 @@ class CardinalNavigationAgent:
             if not allowed:
                 raise ValueError("At least one action must be allowed.")
             policy_time = 0
-            if getattr(self._agent, "deep_inference", False):
+            if getattr(self._agent, "deep_inference", False) and not getattr(
+                self._agent,
+                "receding_horizon",
+                False,
+            ):
                 policy_time = (
                     int(getattr(self._agent, "_current_time", 0))
                     % int(self._agent.temporal_horizon)
@@ -237,10 +242,11 @@ def build_navigation_agent(
         random_seed=config.random_seed,
     )
     if horizon > 1:
-        inference = DeepTemporalInference(
+        inference = FilteredRecedingHorizonInference(
             horizon=horizon,
             message_passing_iterations=config.message_passing_iterations,
             policy_workers=config.policy_workers,
+            average_future_states=config.average_future_states,
         )
     else:
         inference = ShallowInference(

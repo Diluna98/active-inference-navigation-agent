@@ -53,7 +53,7 @@ class NavigationRuntime:
             raise ValueError("temporal_horizon must be positive.")
 
     def run(self, *, planning_windows: int) -> NavigationRuntimeResult:
-        """Run navigation for a bounded number of planning windows."""
+        """Run navigation for a bounded number of observe-plan-act cycles."""
 
         if planning_windows < 1:
             raise ValueError("planning_windows must be positive.")
@@ -64,37 +64,28 @@ class NavigationRuntime:
         terminated = self.termination_condition.is_met(observation)
         self.agent.reset()
 
-        for window in range(planning_windows):
+        for decision in range(planning_windows):
             if terminated:
                 break
-            if self.temporal_horizon > 1:
-                self.agent.reset()
-                time_steps = range(self.temporal_horizon)
+            self.agent.observe(observation.as_array(), time_step=decision)
+            self.agent.infer_states()
+            self.agent.infer_policies()
+            if self.action_constraint is None:
+                selected_action = self.agent.select_action()
             else:
-                time_steps = (window,)
+                allowed_actions = self.action_constraint.allowed_actions(observation)
+                selected_action = self.agent.select_action(allowed_actions)
+            if selected_action is None:
+                continue
 
-            for time_step in time_steps:
-                self.agent.observe(observation.as_array(), time_step=time_step)
-                self.agent.infer_states()
-                self.agent.infer_policies()
-                if self.action_constraint is None:
-                    selected_action = self.agent.select_action()
-                else:
-                    allowed_actions = self.action_constraint.allowed_actions(observation)
-                    selected_action = self.agent.select_action(allowed_actions)
-                if selected_action is None:
-                    continue
+            action = NavigationAction.from_sequence(selected_action)
+            self.action_executor.execute(action)
+            self.action_executor.wait_for_completion()
+            actions.append(action)
 
-                action = NavigationAction.from_sequence(selected_action)
-                self.action_executor.execute(action)
-                self.action_executor.wait_for_completion()
-                actions.append(action)
-
-                observation = self.observation_source.read_observation()
-                observations.append(observation)
-                terminated = self.termination_condition.is_met(observation)
-                if terminated:
-                    break
+            observation = self.observation_source.read_observation()
+            observations.append(observation)
+            terminated = self.termination_condition.is_met(observation)
 
         return NavigationRuntimeResult(
             observations=tuple(observations),

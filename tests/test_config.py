@@ -23,6 +23,7 @@ def test_default_configuration_matches_real_experiment():
     assert config.active_inference.goal_resolution == 10
     assert config.active_inference.temporal_horizon == 1
     assert config.active_inference.policy_samples == 200
+    assert config.active_inference.average_future_states is False
     assert config.experiment.start_column == 0
     assert config.experiment.start_row == 0
     assert config.termination.provider == "persistent_rssi"

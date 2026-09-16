@@ -22,6 +22,8 @@ active_inference:
   exact_state_limit: 100
   random_seed: 0
   policy_workers: 1
+  # Optional diagnostics only; not needed for action selection.
+  average_future_states: false
   normalized_signal_preference: false
 
 experiment:
