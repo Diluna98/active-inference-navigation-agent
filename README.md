@@ -38,7 +38,7 @@ The implementation supports:
 - Discrete spatial hidden states
 - Cardinal movement policies on a bounded grid
 - Shallow state and policy inference
-- Deep temporal inference over multi-step policies
+- Filtered receding-horizon planning over multi-step policies
 - Deterministic, reproducible simulation scenarios
 - Optional parallel policy evaluation through PyAIF
 - Replaceable simulation and ROS 2 sensor/actuator adapters
@@ -98,14 +98,14 @@ Run a shallow-inference episode:
 active-inference-navigate --seed 7 --planning-windows 20
 ```
 
-Run deep temporal inference with a three-step horizon:
+Run filtered receding-horizon planning with a three-state horizon:
 
 ```bash
 active-inference-navigate \
   --seed 7 \
   --temporal-horizon 3 \
   --goal-resolution 2 \
-  --planning-windows 8 \
+  --planning-windows 20 \
   --policy-samples 300
 ```
 
@@ -145,7 +145,16 @@ print(result.reached_goal)
 ```
 
 Set `temporal_horizon=1` for shallow inference. Values greater than one enable
-deep temporal inference.
+filtered receding-horizon inference. The horizon counts the current state, so
+`temporal_horizon=3` evaluates two-action futures. After every new observation,
+the agent filters the current state once, rolls all policies forward, executes
+only the first action, and replans. Beliefs are carried through the executed
+transition instead of being reset between planning windows.
+
+Future policy-weighted state averages are disabled by default because action
+selection does not use them. Set `average_future_states=True` in
+`NavigationAgentConfig`, or pass `--average-future-states`, only when those
+future trajectory diagnostics are required.
 
 `run_navigation_episode()` remains the compatibility entry point for simulation.
 Internally it now composes `SimulationObservationSource`,
@@ -300,7 +309,8 @@ uncertainty, and extrapolation limits.
 
 The `active_inference` YAML section explicitly configures goal resolution,
 temporal horizon, message-passing iterations, policy sampling, reproducibility,
-and worker count. With the default 7 m arena and `goal_resolution: 10`, the
+worker count, and optional future-state diagnostics. With the default 7 m
+arena and `goal_resolution: 10`, the
 source belief is a 10 by 10 grid whose cells are 0.7 m wide. This is independent
 of the 20 by 20 movement grid and its 0.35 m cells.
 
@@ -326,6 +336,12 @@ and `environment.step()`. The agent now uses the five joint cardinal policies,
 and the environment/runtime reject diagonal input defensively. Consequently,
 saved trajectories and the number of steps needed to reach a source can differ
 from version 0.1.0.
+
+Multi-step inference now uses PyAIF's filtered receding-horizon controller.
+Unlike the earlier fixed-window loop, it obtains a fresh observation and
+re-evaluates the complete horizon after every movement. Consequently,
+`planning_windows` is consistently the maximum number of executed actions for
+both shallow and multi-step configurations.
 
 ## Recreate the animation
 

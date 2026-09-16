@@ -1,4 +1,5 @@
 import numpy as np
+from PyAIF import FilteredRecedingHorizonInference, ShallowInference
 
 from active_inference_navigation import (
     NavigationAgentConfig,
@@ -26,6 +27,21 @@ def test_agent_policies_only_contain_cardinal_actions():
     }
 
 
+def test_horizon_selects_shallow_or_filtered_receding_inference():
+    shallow = build_navigation_agent(NavigationAgentConfig(temporal_horizon=1))
+    receding = build_navigation_agent(
+        NavigationAgentConfig(
+            temporal_horizon=3,
+            average_future_states=True,
+        )
+    )
+
+    assert isinstance(shallow.inference, ShallowInference)
+    assert isinstance(receding.inference, FilteredRecedingHorizonInference)
+    assert receding.inference.average_future_states is True
+    assert all(policy.shape == (2, 3) for policy in receding.policies)
+
+
 def test_continuous_shallow_cardinal_navigation_approaches_source():
     result = run_navigation_episode(
         config=NavigationAgentConfig(random_seed=7),
@@ -40,7 +56,7 @@ def test_continuous_shallow_cardinal_navigation_approaches_source():
     assert np.all((result.actions[:, 0] == 0) | (result.actions[:, 1] == 0))
 
 
-def test_continuous_deep_navigation_approaches_source_at_coarse_resolution():
+def test_continuous_receding_navigation_approaches_source_at_coarse_resolution():
     result = run_navigation_episode(
         config=NavigationAgentConfig(
             model_size=20,
@@ -50,10 +66,10 @@ def test_continuous_deep_navigation_approaches_source_at_coarse_resolution():
             policy_samples=300,
             random_seed=7,
         ),
-        planning_windows=8,
+        planning_windows=20,
     )
 
-    assert result.actions.shape == (16, 2)
+    assert result.actions.shape == (20, 2)
     assert np.all(np.isfinite(result.distances))
     assert np.all(np.isfinite(result.positions))
     assert result.distances.min() < 0.5 * result.distances[0]

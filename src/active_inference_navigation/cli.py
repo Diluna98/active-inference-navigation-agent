@@ -17,6 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--temporal-horizon", type=int, default=1)
     parser.add_argument("--planning-windows", type=int, default=20)
     parser.add_argument("--policy-samples", type=int, default=200)
+    parser.add_argument("--average-future-states", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
     return parser
 
@@ -28,6 +29,7 @@ def main() -> None:
         goal_resolution=args.goal_resolution,
         temporal_horizon=args.temporal_horizon,
         policy_samples=args.policy_samples,
+        average_future_states=args.average_future_states,
         random_seed=args.seed,
     )
     result = run_navigation_episode(
@@ -43,4 +45,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

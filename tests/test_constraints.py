@@ -5,7 +5,7 @@ from active_inference_navigation.agent import CardinalNavigationAgent
 from active_inference_navigation.config import NavigationConfig, TerminationConfig
 from active_inference_navigation.constraints import GridBoundaryConstraint
 from active_inference_navigation.geometry import GridGeometry
-from active_inference_navigation.models import Observation
+from active_inference_navigation.models import NavigationAction, Observation
 from active_inference_navigation.ros_runtime import build_action_constraint
 
 
@@ -89,6 +89,23 @@ class FixedActionAgent:
         return self.selected
 
 
+class FakeRecedingPolicyAgent:
+    deep_inference = True
+    receding_horizon = True
+    _current_time = 2
+    temporal_horizon = 3
+
+    def __init__(self):
+        self.policies = [
+            np.asarray([[1, 0, 0], [2, 0, 0]]),
+            np.asarray([[2, 0, 0], [1, 0, 0]]),
+        ]
+        self.posterior_pi = np.asarray([0.9, 0.8])
+
+    def select_action(self):
+        return self.policies[np.argmax(self.posterior_pi)][0]
+
+
 def test_agent_selects_next_best_policy_when_boundary_masks_preferred_action():
     agent = CardinalNavigationAgent(FakePolicyAgent())
     constraint = GridBoundaryConstraint(GridGeometry())
@@ -97,6 +114,13 @@ def test_agent_selects_next_best_policy_when_boundary_masks_preferred_action():
     selected = agent.select_action(allowed)
 
     assert tuple(selected[:2]) == (2, 0)
+
+
+def test_receding_constraint_always_masks_first_policy_action():
+    agent = CardinalNavigationAgent(FakeRecedingPolicyAgent())
+    selected = agent.select_action({NavigationAction.from_sequence((2, 0))})
+
+    assert tuple(selected) == (2, 0)
 
 
 @pytest.mark.parametrize(

@@ -99,9 +99,9 @@ def test_runtime_rejects_invalid_agent_action_before_execution():
     assert not any(event[0] == "execute" for event in events)
 
 
-def test_runtime_resets_agent_for_each_deep_planning_window():
+def test_runtime_replans_once_per_observation_without_resetting_beliefs():
     events = []
-    agent = FakeAgent([(0, 0), (0, 0), (0, 0), (0, 0)])
+    agent = FakeAgent([(0, 0), (0, 0)])
     runtime = NavigationRuntime(
         agent=agent,
         observation_source=FakeObservationSource(
@@ -115,5 +115,5 @@ def test_runtime_resets_agent_for_each_deep_planning_window():
 
     runtime.run(planning_windows=2)
 
-    assert agent.reset_count == 3
-    assert [time_step for _, time_step in agent.observed] == [0, 1, 0, 1]
+    assert agent.reset_count == 1
+    assert [time_step for _, time_step in agent.observed] == [0, 1]

@@ -153,6 +153,7 @@ def run_ros_navigation(
             exact_state_limit=inference.exact_state_limit,
             random_seed=inference.random_seed,
             policy_workers=inference.policy_workers,
+            average_future_states=inference.average_future_states,
             normalized_signal_preference=inference.normalized_signal_preference,
             likelihood_provider=config.likelihood_provider,
             reference_rssi=config.rssi_likelihood.reference_rssi,
