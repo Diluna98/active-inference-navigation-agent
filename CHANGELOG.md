@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Require PyAIF 0.4 and use `FilteredRecedingHorizonInference` whenever
+- Require PyAIF 0.4.1 and use `FilteredRecedingHorizonInference` whenever
   `temporal_horizon` is greater than one.
 - Replan after every observation and execute only the first action of each
   multi-step policy, carrying the filtered posterior through the executed
@@ -19,6 +19,10 @@ All notable changes to this project are documented here.
 - Optional `average_future_states` configuration and CLI flag for diagnostic
   policy-weighted future beliefs. It remains disabled by default because it is
   not needed for action selection.
+- A reproducible single-object 2D Multi-Object Search benchmark with fixed
+  belief resolutions and receding-horizon depths.
+- Decision-level timing, VFE, entropy, behavior, policy-count, and pairwise
+  planning-depth disagreement diagnostics for the MOS benchmark.
 
 ## [0.5.0] - 2026-08-01
 
