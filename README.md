@@ -43,6 +43,29 @@ The implementation supports:
 - Optional parallel policy evaluation through PyAIF
 - Replaceable simulation and ROS 2 sensor/actuator adapters
 - Typed YAML configuration for arena, topics, sensors, and motion control
+- A reproducible 2D Multi-Object Search benchmark for fixed belief-resolution
+  and planning-depth experiments
+
+## 2D Multi-Object Search benchmark
+
+The repository includes a controlled single-object 2D-MOS benchmark for
+studying the separate effects of target-belief resolution and temporal
+planning depth. Robot position is observed exactly, target position is hidden,
+and range plus obstacle occlusion determine detection probability. Every agent
+uses PyAIF's filtered receding-horizon inference; no adaptive controller is
+included in this baseline.
+
+Run a quick diagnostic with:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\diagnose_mos_fixed.py `
+  --target-seeds 0 --resolutions 2 --depths 1 --max-steps 5 `
+  --output-dir docs/results/mos_fixed_smoke
+```
+
+See [`docs/mos_benchmark.md`](docs/mos_benchmark.md) for the state and
+observation spaces, fixed-sweep protocol, initial results, and differences from
+the established 3D-MOS benchmark.
 
 ## Architecture
 
