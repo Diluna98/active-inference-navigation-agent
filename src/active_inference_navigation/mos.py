@@ -137,6 +137,51 @@ class MOSLayout:
         ]
         return candidates[int(np.random.default_rng(seed).integers(len(candidates)))]
 
+    def sample_start(self, seed: int) -> tuple[int, int]:
+        """Sample a reproducible free start from the map's left half."""
+
+        candidates = [
+            (x, y) for x in range(self.size // 2) for y in range(self.size) if self.is_free((x, y))
+        ]
+        return candidates[int(np.random.default_rng(seed).integers(len(candidates)))]
+
+
+@dataclass(frozen=True)
+class MOSInstance:
+    """One paired benchmark instance shared by every allocation setting."""
+
+    instance_seed: int
+    layout: MOSLayout
+    target_seed: int
+    observation_seed: int
+    start_seed: int
+    target: tuple[int, int]
+
+
+def sample_mos_instance(seed: int) -> MOSInstance:
+    """Generate a deterministic map, start, target, and sensor realization."""
+
+    rng = np.random.default_rng(seed)
+    map_seed = int(rng.integers(0, np.iinfo(np.int32).max))
+    start_seed = int(rng.integers(0, np.iinfo(np.int32).max))
+    target_seed = int(rng.integers(0, np.iinfo(np.int32).max))
+    observation_seed = int(rng.integers(0, np.iinfo(np.int32).max))
+    sensor_range = float(rng.choice((5.0, 6.0, 7.0)))
+    base_layout = MOSLayout(map_seed=map_seed, sensor_range=sensor_range)
+    layout = MOSLayout(
+        map_seed=map_seed,
+        start=base_layout.sample_start(start_seed),
+        sensor_range=sensor_range,
+    )
+    return MOSInstance(
+        instance_seed=seed,
+        layout=layout,
+        target_seed=target_seed,
+        observation_seed=observation_seed,
+        start_seed=start_seed,
+        target=layout.sample_target(target_seed),
+    )
+
 
 def target_state(
     position: tuple[int, int],

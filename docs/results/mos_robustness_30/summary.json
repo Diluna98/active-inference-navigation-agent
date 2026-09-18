@@ -1,0 +1,1725 @@
+{
+  "protocol": {
+    "domain": "paired randomized single-object 2D MOS",
+    "instance_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "resolutions": [
+      2,
+      5,
+      10,
+      20
+    ],
+    "depths": [
+      1,
+      2,
+      3
+    ],
+    "max_steps": 50,
+    "message_passing_iterations": 10,
+    "policy_workers": 1,
+    "randomized_properties": [
+      "obstacle geometry",
+      "robot start",
+      "target location",
+      "sensor range",
+      "observation realization"
+    ],
+    "paired_across_allocations": true,
+    "adaptive_controller": false
+  },
+  "software": {
+    "python": "3.12.14",
+    "numpy": "2.5.3",
+    "pyaif_toolkit": "0.4.1",
+    "active_inference_navigation_agent": "0.5.0"
+  },
+  "configurations": [
+    {
+      "resolution": 2,
+      "action_depth": 1,
+      "num_policies": 5,
+      "episodes": 30,
+      "success_rate": 0.1,
+      "success_rate_ci95_wilson": [
+        0.03459925995971615,
+        0.25621441315266624
+      ],
+      "mean_steps": 47.96666666666667,
+      "mean_task_cost": 144.08333333333334,
+      "mean_decision_ms": 3.9909373870743567,
+      "median_decision_ms": 2.6111,
+      "p95_decision_ms": 7.373639999999999,
+      "mean_state_ms": 2.6218888811674774,
+      "mean_policy_ms": 1.3046193884642112,
+      "mean_cumulative_inference_ms": 191.43196333333333
+    },
+    {
+      "resolution": 2,
+      "action_depth": 2,
+      "num_policies": 25,
+      "episodes": 30,
+      "success_rate": 0.06666666666666667,
+      "success_rate_ci95_wilson": [
+        0.01847663532769335,
+        0.21323817721072091
+      ],
+      "mean_steps": 48.5,
+      "mean_task_cost": 145.3,
+      "mean_decision_ms": 9.180451340206185,
+      "median_decision_ms": 6.064000000000001,
+      "p95_decision_ms": 16.36834,
+      "mean_state_ms": 2.7953751202749144,
+      "mean_policy_ms": 6.3110219243986245,
+      "mean_cumulative_inference_ms": 445.25188999999995
+    },
+    {
+      "resolution": 2,
+      "action_depth": 3,
+      "num_policies": 125,
+      "episodes": 30,
+      "success_rate": 0.26666666666666666,
+      "success_rate_ci95_wilson": [
+        0.14182495553910618,
+        0.4444830204431169
+      ],
+      "mean_steps": 42.43333333333333,
+      "mean_task_cost": 118.18333333333334,
+      "mean_decision_ms": 73.80324446190102,
+      "median_decision_ms": 50.952,
+      "p95_decision_ms": 112.31518,
+      "mean_state_ms": 3.008245090337785,
+      "mean_policy_ms": 70.70296174391201,
+      "mean_cumulative_inference_ms": 3131.717673333333
+    },
+    {
+      "resolution": 5,
+      "action_depth": 1,
+      "num_policies": 5,
+      "episodes": 30,
+      "success_rate": 0.5333333333333333,
+      "success_rate_ci95_wilson": [
+        0.3614201328152505,
+        0.6976787277587178
+      ],
+      "mean_steps": 36.7,
+      "mean_task_cost": 85.86666666666666,
+      "mean_decision_ms": 10.162964850136241,
+      "median_decision_ms": 6.7651,
+      "p95_decision_ms": 18.038,
+      "mean_state_ms": 8.022202361489555,
+      "mean_policy_ms": 2.0698660308810175,
+      "mean_cumulative_inference_ms": 372.98081
+    },
+    {
+      "resolution": 5,
+      "action_depth": 2,
+      "num_policies": 25,
+      "episodes": 30,
+      "success_rate": 0.8,
+      "success_rate_ci95_wilson": [
+        0.6269395261897256,
+        0.9049502189759876
+      ],
+      "mean_steps": 30.7,
+      "mean_task_cost": 54.21666666666667,
+      "mean_decision_ms": 15.887833984799132,
+      "median_decision_ms": 15.9852,
+      "p95_decision_ms": 24.729100000000003,
+      "mean_state_ms": 7.670431704668838,
+      "mean_policy_ms": 8.1427332247557,
+      "mean_cumulative_inference_ms": 487.7565033333333
+    },
+    {
+      "resolution": 5,
+      "action_depth": 3,
+      "num_policies": 125,
+      "episodes": 30,
+      "success_rate": 0.9,
+      "success_rate_ci95_wilson": [
+        0.7437855868473339,
+        0.9654007400402839
+      ],
+      "mean_steps": 28.433333333333334,
+      "mean_task_cost": 41.45,
+      "mean_decision_ms": 469.20230504103165,
+      "median_decision_ms": 362.8563,
+      "p95_decision_ms": 694.3253,
+      "mean_state_ms": 7.530537749120751,
+      "mean_policy_ms": 461.5782810082064,
+      "mean_cumulative_inference_ms": 13340.98554
+    },
+    {
+      "resolution": 10,
+      "action_depth": 1,
+      "num_policies": 5,
+      "episodes": 30,
+      "success_rate": 0.8333333333333334,
+      "success_rate_ci95_wilson": [
+        0.6643529481431982,
+        0.9266356575964831
+      ],
+      "mean_steps": 27.8,
+      "mean_task_cost": 46.63333333333333,
+      "mean_decision_ms": 37.42827709832134,
+      "median_decision_ms": 28.852249999999998,
+      "p95_decision_ms": 63.17554,
+      "mean_state_ms": 31.11834856115108,
+      "mean_policy_ms": 6.226785131894484,
+      "mean_cumulative_inference_ms": 1040.5061033333334
+    },
+    {
+      "resolution": 10,
+      "action_depth": 2,
+      "num_policies": 25,
+      "episodes": 30,
+      "success_rate": 0.9,
+      "success_rate_ci95_wilson": [
+        0.7437855868473339,
+        0.9654007400402839
+      ],
+      "mean_steps": 27.466666666666665,
+      "mean_task_cost": 37.96666666666667,
+      "mean_decision_ms": 51.335486893203885,
+      "median_decision_ms": 50.016000000000005,
+      "p95_decision_ms": 77.36664,
+      "mean_state_ms": 30.40932281553398,
+      "mean_policy_ms": 20.83892572815534,
+      "mean_cumulative_inference_ms": 1410.0147066666666
+    },
+    {
+      "resolution": 10,
+      "action_depth": 3,
+      "num_policies": 125,
+      "episodes": 30,
+      "success_rate": 0.8666666666666667,
+      "success_rate_ci95_wilson": [
+        0.7031831605558306,
+        0.9469043057578189
+      ],
+      "mean_steps": 26.133333333333333,
+      "mean_task_cost": 40.46666666666667,
+      "mean_decision_ms": 617.7606381377551,
+      "median_decision_ms": 479.22434999999996,
+      "p95_decision_ms": 933.344445,
+      "mean_state_ms": 31.612817602040817,
+      "mean_policy_ms": 586.0526914540816,
+      "mean_cumulative_inference_ms": 16144.144676666667
+    },
+    {
+      "resolution": 20,
+      "action_depth": 1,
+      "num_policies": 5,
+      "episodes": 30,
+      "success_rate": 0.9333333333333333,
+      "success_rate_ci95_wilson": [
+        0.7867618227892791,
+        0.9815233646723066
+      ],
+      "mean_steps": 29.466666666666665,
+      "mean_task_cost": 38.13333333333333,
+      "mean_decision_ms": 200.2147350678733,
+      "median_decision_ms": 169.1175,
+      "p95_decision_ms": 283.05438499999997,
+      "mean_state_ms": 156.8710617647059,
+      "mean_policy_ms": 43.242251470588236,
+      "mean_cumulative_inference_ms": 5899.66086
+    },
+    {
+      "resolution": 20,
+      "action_depth": 2,
+      "num_policies": 25,
+      "episodes": 30,
+      "success_rate": 0.9,
+      "success_rate_ci95_wilson": [
+        0.7437855868473339,
+        0.9654007400402839
+      ],
+      "mean_steps": 29.866666666666667,
+      "mean_task_cost": 40.86666666666667,
+      "mean_decision_ms": 268.97035959821426,
+      "median_decision_ms": 218.15655,
+      "p95_decision_ms": 397.39272500000004,
+      "mean_state_ms": 155.79045993303572,
+      "mean_policy_ms": 113.08636462053572,
+      "mean_cumulative_inference_ms": 8033.248073333333
+    },
+    {
+      "resolution": 20,
+      "action_depth": 3,
+      "num_policies": 125,
+      "episodes": 30,
+      "success_rate": 0.8666666666666667,
+      "success_rate_ci95_wilson": [
+        0.7031831605558306,
+        0.9469043057578189
+      ],
+      "mean_steps": 27.2,
+      "mean_task_cost": 41.2,
+      "mean_decision_ms": 367.82216752450984,
+      "median_decision_ms": 253.0577,
+      "p95_decision_ms": 601.966975,
+      "mean_state_ms": 157.07993259803922,
+      "mean_policy_ms": 210.6494112745098,
+      "mean_cumulative_inference_ms": 10004.762956666667
+    }
+  ],
+  "initial_action_instances": 30,
+  "initial_action_disagreement_by_resolution": [
+    {
+      "resolution": 2,
+      "instances": 30,
+      "t1_vs_t3_count": 7,
+      "t1_vs_t3_rate": 0.23333333333333334,
+      "t2_vs_t3_count": 4,
+      "t2_vs_t3_rate": 0.13333333333333333
+    },
+    {
+      "resolution": 5,
+      "instances": 30,
+      "t1_vs_t3_count": 6,
+      "t1_vs_t3_rate": 0.2,
+      "t2_vs_t3_count": 2,
+      "t2_vs_t3_rate": 0.06666666666666667
+    },
+    {
+      "resolution": 10,
+      "instances": 30,
+      "t1_vs_t3_count": 6,
+      "t1_vs_t3_rate": 0.2,
+      "t2_vs_t3_count": 1,
+      "t2_vs_t3_rate": 0.03333333333333333
+    },
+    {
+      "resolution": 20,
+      "instances": 30,
+      "t1_vs_t3_count": 6,
+      "t1_vs_t3_rate": 0.2,
+      "t2_vs_t3_count": 4,
+      "t2_vs_t3_rate": 0.13333333333333333
+    }
+  ],
+  "trajectory_prefix_disagreement_by_resolution": [
+    {
+      "resolution": 2,
+      "instances": 30,
+      "t1_vs_t3_count": 27,
+      "t1_vs_t3_rate": 0.9,
+      "t1_vs_t3_mean_first_decision": 4.111111111111111,
+      "t2_vs_t3_count": 23,
+      "t2_vs_t3_rate": 0.7666666666666667,
+      "t2_vs_t3_mean_first_decision": 8.26086956521739
+    },
+    {
+      "resolution": 5,
+      "instances": 30,
+      "t1_vs_t3_count": 26,
+      "t1_vs_t3_rate": 0.8666666666666667,
+      "t1_vs_t3_mean_first_decision": 7.076923076923077,
+      "t2_vs_t3_count": 21,
+      "t2_vs_t3_rate": 0.7,
+      "t2_vs_t3_mean_first_decision": 11.047619047619047
+    },
+    {
+      "resolution": 10,
+      "instances": 30,
+      "t1_vs_t3_count": 27,
+      "t1_vs_t3_rate": 0.9,
+      "t1_vs_t3_mean_first_decision": 6.185185185185185,
+      "t2_vs_t3_count": 23,
+      "t2_vs_t3_rate": 0.7666666666666667,
+      "t2_vs_t3_mean_first_decision": 12.043478260869565
+    },
+    {
+      "resolution": 20,
+      "instances": 30,
+      "t1_vs_t3_count": 27,
+      "t1_vs_t3_rate": 0.9,
+      "t1_vs_t3_mean_first_decision": 6.925925925925926,
+      "t2_vs_t3_count": 21,
+      "t2_vs_t3_rate": 0.7,
+      "t2_vs_t3_mean_first_decision": 9.476190476190476
+    }
+  ],
+  "paired_depth_effects": [
+    {
+      "resolution": 2,
+      "left_depth": 1,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 6,
+      "left_success_only": 1,
+      "both_succeeded": 2,
+      "both_failed": 21,
+      "mean_task_cost_left_minus_right": 25.9,
+      "mean_inference_ms_left_minus_right": -2940.2857099999997
+    },
+    {
+      "resolution": 2,
+      "left_depth": 2,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 6,
+      "left_success_only": 0,
+      "both_succeeded": 2,
+      "both_failed": 22,
+      "mean_task_cost_left_minus_right": 27.116666666666667,
+      "mean_inference_ms_left_minus_right": -2686.465783333333
+    },
+    {
+      "resolution": 5,
+      "left_depth": 1,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 11,
+      "left_success_only": 0,
+      "both_succeeded": 16,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": 44.416666666666664,
+      "mean_inference_ms_left_minus_right": -12968.004729999999
+    },
+    {
+      "resolution": 5,
+      "left_depth": 2,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 3,
+      "left_success_only": 0,
+      "both_succeeded": 24,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": 12.766666666666667,
+      "mean_inference_ms_left_minus_right": -12853.229036666666
+    },
+    {
+      "resolution": 10,
+      "left_depth": 1,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 1,
+      "left_success_only": 0,
+      "both_succeeded": 25,
+      "both_failed": 4,
+      "mean_task_cost_left_minus_right": 6.166666666666667,
+      "mean_inference_ms_left_minus_right": -15103.638573333334
+    },
+    {
+      "resolution": 10,
+      "left_depth": 2,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 0,
+      "left_success_only": 1,
+      "both_succeeded": 26,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": -2.5,
+      "mean_inference_ms_left_minus_right": -14734.12997
+    },
+    {
+      "resolution": 20,
+      "left_depth": 1,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 1,
+      "left_success_only": 3,
+      "both_succeeded": 25,
+      "both_failed": 1,
+      "mean_task_cost_left_minus_right": -3.066666666666667,
+      "mean_inference_ms_left_minus_right": -4105.1020966666665
+    },
+    {
+      "resolution": 20,
+      "left_depth": 2,
+      "right_depth": 3,
+      "instances": 30,
+      "right_success_only": 0,
+      "left_success_only": 1,
+      "both_succeeded": 26,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": -0.3333333333333333,
+      "mean_inference_ms_left_minus_right": -1971.5148833333337
+    }
+  ],
+  "paired_resolution_effects": [
+    {
+      "action_depth": 1,
+      "left_resolution": 2,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 25,
+      "left_success_only": 0,
+      "both_succeeded": 3,
+      "both_failed": 2,
+      "mean_task_cost_left_minus_right": 105.95,
+      "mean_inference_ms_left_minus_right": -5708.2288966666665
+    },
+    {
+      "action_depth": 1,
+      "left_resolution": 5,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 13,
+      "left_success_only": 1,
+      "both_succeeded": 15,
+      "both_failed": 1,
+      "mean_task_cost_left_minus_right": 47.733333333333334,
+      "mean_inference_ms_left_minus_right": -5526.68005
+    },
+    {
+      "action_depth": 1,
+      "left_resolution": 10,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 4,
+      "left_success_only": 1,
+      "both_succeeded": 24,
+      "both_failed": 1,
+      "mean_task_cost_left_minus_right": 8.5,
+      "mean_inference_ms_left_minus_right": -4859.154756666667
+    },
+    {
+      "action_depth": 2,
+      "left_resolution": 2,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 25,
+      "left_success_only": 0,
+      "both_succeeded": 2,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": 104.43333333333334,
+      "mean_inference_ms_left_minus_right": -7587.996183333333
+    },
+    {
+      "action_depth": 2,
+      "left_resolution": 5,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 4,
+      "left_success_only": 1,
+      "both_succeeded": 23,
+      "both_failed": 2,
+      "mean_task_cost_left_minus_right": 13.35,
+      "mean_inference_ms_left_minus_right": -7545.491569999999
+    },
+    {
+      "action_depth": 2,
+      "left_resolution": 10,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 0,
+      "left_success_only": 0,
+      "both_succeeded": 27,
+      "both_failed": 3,
+      "mean_task_cost_left_minus_right": -2.9,
+      "mean_inference_ms_left_minus_right": -6623.233366666666
+    },
+    {
+      "action_depth": 3,
+      "left_resolution": 2,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 18,
+      "left_success_only": 0,
+      "both_succeeded": 8,
+      "both_failed": 4,
+      "mean_task_cost_left_minus_right": 76.98333333333333,
+      "mean_inference_ms_left_minus_right": -6873.045283333334
+    },
+    {
+      "action_depth": 3,
+      "left_resolution": 5,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 1,
+      "left_success_only": 2,
+      "both_succeeded": 25,
+      "both_failed": 2,
+      "mean_task_cost_left_minus_right": 0.25,
+      "mean_inference_ms_left_minus_right": 3336.222583333333
+    },
+    {
+      "action_depth": 3,
+      "left_resolution": 10,
+      "right_resolution": 20,
+      "instances": 30,
+      "right_success_only": 0,
+      "left_success_only": 0,
+      "both_succeeded": 26,
+      "both_failed": 4,
+      "mean_task_cost_left_minus_right": -0.7333333333333333,
+      "mean_inference_ms_left_minus_right": 6139.381719999999
+    }
+  ],
+  "allocation_regime_counts": {
+    "coarse_shallow_sufficient": 3,
+    "joint_resolution_and_depth_required": 1,
+    "mixed_tradeoff": 6,
+    "resolution_required": 20
+  },
+  "allocation_regimes": [
+    {
+      "instance_seed": 0,
+      "regime": "joint_resolution_and_depth_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 1,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 2,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 3,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 4,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 5,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 6,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 7,
+      "regime": "coarse_shallow_sufficient",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 1
+        },
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 8,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 9,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 10,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 11,
+      "regime": "coarse_shallow_sufficient",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 1
+        },
+        {
+          "resolution": 2,
+          "action_depth": 2
+        },
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 12,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 13,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        }
+      ]
+    },
+    {
+      "instance_seed": 14,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 15,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 20,
+          "action_depth": 1
+        }
+      ]
+    },
+    {
+      "instance_seed": 16,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 17,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 18,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 19,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 2
+        },
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 20,
+      "regime": "coarse_shallow_sufficient",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 21,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 22,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 23,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        }
+      ]
+    },
+    {
+      "instance_seed": 24,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 25,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 26,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 27,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 28,
+      "regime": "mixed_tradeoff",
+      "successful_configurations": [
+        {
+          "resolution": 2,
+          "action_depth": 3
+        },
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    },
+    {
+      "instance_seed": 29,
+      "regime": "resolution_required",
+      "successful_configurations": [
+        {
+          "resolution": 5,
+          "action_depth": 1
+        },
+        {
+          "resolution": 5,
+          "action_depth": 2
+        },
+        {
+          "resolution": 5,
+          "action_depth": 3
+        },
+        {
+          "resolution": 10,
+          "action_depth": 1
+        },
+        {
+          "resolution": 10,
+          "action_depth": 2
+        },
+        {
+          "resolution": 10,
+          "action_depth": 3
+        },
+        {
+          "resolution": 20,
+          "action_depth": 1
+        },
+        {
+          "resolution": 20,
+          "action_depth": 2
+        },
+        {
+          "resolution": 20,
+          "action_depth": 3
+        }
+      ]
+    }
+  ]
+}

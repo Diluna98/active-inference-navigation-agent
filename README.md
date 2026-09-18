@@ -67,6 +67,11 @@ See [`docs/mos_benchmark.md`](docs/mos_benchmark.md) for the state and
 observation spaces, fixed-sweep protocol, initial results, and differences from
 the established 3D-MOS benchmark.
 
+The paired robustness runner randomizes maps, starts, targets, sensor ranges,
+and observation realizations while holding each generated instance fixed across
+all `(gamma, T)` allocations. This is the required validation stage before an
+adaptive allocation controller is introduced.
+
 ## Architecture
 
 The Active Inference core does not import ROS, TurtleBot, Bluetooth, or the

@@ -108,6 +108,86 @@ benchmark conclusions.
 The fixed sweep must be repeated across maps, target locations, and observation
 seeds before defining matched-state interventions or any adaptive controller.
 
+## Paired robustness protocol
+
+The robustness runner generates one deterministic domain instance per master
+seed. Each seed jointly determines obstacle geometry, a free robot start in the
+left half of the map, a target in the right half, sensor range, and the stochastic
+observation realization. Every `(gamma, T)` allocation is evaluated on exactly
+the same generated instance, providing paired comparisons without a Cartesian
+explosion of independent seed lists.
+
+Run a one-configuration smoke test:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\diagnose_mos_robustness.py `
+  --instance-seeds 0 --resolutions 2 --depths 1 --max-steps 5 `
+  --message-passing-iterations 2 --output-dir docs/results/mos_robustness_smoke
+```
+
+Run the planned 30-instance fixed-allocation experiment:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\diagnose_mos_robustness.py `
+  --num-instances 30 --seed-offset 0 --max-steps 50 `
+  --output-dir docs/results/mos_robustness_30
+```
+
+This evaluates 360 paired episodes. Keep `--policy-workers 1` for interpretable
+latency comparisons; increasing it changes the execution regime. The output
+contains `instances.csv`, `episodes.csv`, `decisions.csv`, and `summary.json`.
+In addition to the fixed diagnostic fields, the summary reports Wilson 95%
+success intervals, median and 95th-percentile decision latency, paired depth and
+resolution effects, and per-instance allocation regimes. A positive
+`mean_task_cost_left_minus_right` means the right-hand, more expensive allocation
+reduced task cost. The runner remains strictly diagnostic and contains no adaptive
+controller.
+
+### Thirty-instance result
+
+The completed paired run contains 30 randomized instances, 360 episodes, and
+12,080 decisions. Every instance contains exactly one episode for each of the
+12 fixed allocations.
+
+| `gamma` | `T=1` success | `T=2` success | `T=3` success |
+| ---: | ---: | ---: | ---: |
+| 2 | 10.0% | 6.7% | 26.7% |
+| 5 | 53.3% | 80.0% | 90.0% |
+| 10 | 83.3% | 90.0% | 86.7% |
+| 20 | 93.3% | 90.0% | 86.7% |
+
+| `gamma` | `T=1` mean ms/decision | `T=2` mean ms/decision | `T=3` mean ms/decision |
+| ---: | ---: | ---: | ---: |
+| 2 | 4.0 | 9.2 | 73.8 |
+| 5 | 10.2 | 15.9 | 469.2 |
+| 10 | 37.4 | 51.3 | 617.8 |
+| 20 | 200.2 | 269.0 | 367.8 |
+
+The paired results establish both allocation axes:
+
+- At `gamma=5`, `T=3` succeeded in 11 instances where `T=1` failed, while the
+  reverse never occurred (two-sided exact McNemar `p = 0.00098`).
+- At `T=1`, `gamma=20` succeeded in 25 instances where `gamma=2` failed, while
+  the reverse never occurred (`p < 0.000001`).
+- `T=1` and `T=3` diverged from an identical trajectory prefix in 86.7--90.0%
+  of instances, depending on resolution. Initial actions already differed in
+  20.0--23.3% of instances.
+- One randomized instance required both resolution above 2 and depth above 1.
+  Six more contained mixed resolution/depth trade-offs, and three were already
+  solvable by `(gamma=2, T=1)`.
+- Greater depth was not uniformly beneficial at high resolution. This makes
+  fixed maximum allocation both computationally wasteful and behaviorally
+  suboptimal on some instances.
+
+An offline oracle that chose the least measured cumulative-inference-time
+successful allocation for each instance reached 100% success. It averaged
+774.5 ms of cumulative inference and task cost 29.7. For comparison, the strong
+fixed settings `(gamma=10, T=2)` and `(gamma=20, T=1)` reached 90.0% and 93.3%
+success with 1,410.0 ms and 5,899.7 ms of cumulative inference, respectively.
+This oracle is a post-hoc upper bound, not a deployable controller, but it
+demonstrates useful allocation headroom. The complete outputs and integrity
+notes are in `docs/results/mos_robustness_30/`.
+
 ## Deliberate differences from 3D-MOS
 
 The published 3D-MOS implementation uses octree beliefs, MOVE/LOOK/FIND
