@@ -108,6 +108,41 @@ benchmark conclusions.
 The fixed sweep must be repeated across maps, target locations, and observation
 seeds before defining matched-state interventions or any adaptive controller.
 
+## Paired robustness protocol
+
+The robustness runner generates one deterministic domain instance per master
+seed. Each seed jointly determines obstacle geometry, a free robot start in the
+left half of the map, a target in the right half, sensor range, and the stochastic
+observation realization. Every `(gamma, T)` allocation is evaluated on exactly
+the same generated instance, providing paired comparisons without a Cartesian
+explosion of independent seed lists.
+
+Run a one-configuration smoke test:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\diagnose_mos_robustness.py `
+  --instance-seeds 0 --resolutions 2 --depths 1 --max-steps 5 `
+  --message-passing-iterations 2 --output-dir docs/results/mos_robustness_smoke
+```
+
+Run the planned 30-instance fixed-allocation experiment:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\diagnose_mos_robustness.py `
+  --num-instances 30 --seed-offset 0 --max-steps 50 `
+  --output-dir docs/results/mos_robustness_30
+```
+
+This evaluates 360 paired episodes. Keep `--policy-workers 1` for interpretable
+latency comparisons; increasing it changes the execution regime. The output
+contains `instances.csv`, `episodes.csv`, `decisions.csv`, and `summary.json`.
+In addition to the fixed diagnostic fields, the summary reports Wilson 95%
+success intervals, median and 95th-percentile decision latency, paired depth and
+resolution effects, and per-instance allocation regimes. A positive
+`mean_task_cost_left_minus_right` means the right-hand, more expensive allocation
+reduced task cost. The runner remains strictly diagnostic and contains no adaptive
+controller.
+
 ## Deliberate differences from 3D-MOS
 
 The published 3D-MOS implementation uses octree beliefs, MOVE/LOOK/FIND

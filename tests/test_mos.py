@@ -12,6 +12,7 @@ from active_inference_navigation.mos import (
     MOSLayout,
     build_mos_agent,
     detection_distribution,
+    sample_mos_instance,
     selected_mos_action,
     target_state,
 )
@@ -24,6 +25,28 @@ def test_seeded_layout_and_target_are_reproducible():
     assert first.blocked == second.blocked
     assert first.sample_target(8) == second.sample_target(8)
     assert first.is_free(first.sample_target(8))
+
+
+def test_seeded_robustness_instance_is_reproducible_and_valid():
+    first = sample_mos_instance(17)
+    second = sample_mos_instance(17)
+
+    assert first == second
+    assert first.layout.is_free(first.layout.start)
+    assert first.layout.is_free(first.target)
+    assert first.layout.start[0] < first.layout.size // 2
+    assert first.target[0] >= first.layout.size // 2
+    assert first.layout.sensor_range in (5.0, 6.0, 7.0)
+
+
+def test_robustness_instances_vary_multiple_domain_properties():
+    instances = [sample_mos_instance(seed) for seed in range(12)]
+
+    assert len({instance.layout.map_seed for instance in instances}) > 1
+    assert len({instance.layout.start for instance in instances}) > 1
+    assert len({instance.target for instance in instances}) > 1
+    assert len({instance.observation_seed for instance in instances}) > 1
+    assert len({instance.layout.sensor_range for instance in instances}) > 1
 
 
 def test_detection_improves_with_visible_range_and_occlusion():

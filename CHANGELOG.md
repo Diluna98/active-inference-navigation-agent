@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+- Add a paired randomized 2D-MOS robustness protocol with deterministic instance
+  generation, confidence intervals, allocation-effect comparisons, and regime
+  classification.
+
 ### Changed
 
 - Require PyAIF 0.4.1 and use `FilteredRecedingHorizonInference` whenever
